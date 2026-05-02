@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: play-arenas-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-decathlon}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-decathlon}
+      POSTGRES_DB: temporal
+    ports: ['5432:5432']
+    volumes: ['pgdata:/var/lib/postgresql/data']
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U decathlon"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  temporal:
+    image: temporalio/auto-setup:1.25.0
+    container_name: play-arenas-temporal
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=${DB_USER:-decathlon}
+      - POSTGRES_PWD=${DB_PASSWORD:-decathlon}
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    ports: ['7233:7233']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./temporal-config:/etc/temporal/config/dynamicconfig
+
+  temporal-ui:
+    image: temporalio/ui:2.31.2
+    container_name: play-arenas-temporal-ui
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    ports: ['8080:8080']
+    depends_on: [temporal]
+
+volumes:
+  pgdata:
