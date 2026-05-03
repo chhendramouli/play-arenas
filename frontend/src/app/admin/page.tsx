@@ -348,7 +348,7 @@ export default function AdminPage() {
                 <div className="admin-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   {[
                     { label: "Name *", key: "name", placeholder: "e.g. Koramangala Football Turf" },
-                    { label: "Location *", key: "location", placeholder: "e.g. Let's Play, Koramangala, Bangalore" },
+                    { label: "Location *", key: "location", placeholder: "e.g. DPLAY, Koramangala, Bangalore" },
                     { label: "Price per Hour (₹) *", key: "pricePerHour", placeholder: "e.g. 800", type: "number" },
                     { label: "Image URL", key: "imageUrl", placeholder: "https://images.unsplash.com/..." },
                   ].map(f => (

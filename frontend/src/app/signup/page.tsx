@@ -37,7 +37,7 @@ export default function SignupPage() {
             Create your account
           </h1>
           <p style={{ color: "var(--muted)", fontSize: 14 }}>
-            Join <span style={{ color: "var(--accent)", fontWeight: 700 }}>Let's Play</span> and book in seconds
+            Join <span style={{ color: "var(--accent)", fontWeight: 700 }}>DPLAY</span> and book in seconds
           </p>
         </div>
 

@@ -18,7 +18,7 @@ const SC: Record<string, { icon: string; bg: string; color: string }> = {
   Default:    { icon: "🏟️", bg: "rgba(168,85,247,0.1)",  color: "#a855f7" },
 };
 
-// Let's Play Blue
+// DPLAY Blue
 const DKT_BLUE = "#3643ba";
 
 type Status = "IDLE" | "BOOKING" | "PAYMENT" | "SUCCESS" | "FAILED";

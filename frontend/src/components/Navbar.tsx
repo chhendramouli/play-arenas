@@ -14,7 +14,7 @@ export default function Navbar() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const saved = sessionStorage.getItem("letsplay_city");
+    const saved = sessionStorage.getItem("dplay_city");
     if (saved) { setCity(saved); setLocStatus("granted"); return; }
     if (!navigator.geolocation) { setLocStatus("denied"); return; }
     setLocStatus("loading");
@@ -28,7 +28,7 @@ export default function Navbar() {
           );
           const d = await r.json();
           const detected = d.address?.city || d.address?.town || d.address?.county || "India";
-          sessionStorage.setItem("letsplay_city", detected);
+          sessionStorage.setItem("dplay_city", detected);
           setCity(detected);
           setLocStatus("granted");
         } catch { setLocStatus("denied"); }
@@ -96,16 +96,11 @@ export default function Navbar() {
             display: "flex", alignItems: "center", justifyContent: "center",
             fontWeight: 900, fontSize: 20, borderRadius: 8, boxShadow: "0 0 20px rgba(54, 67, 186, 0.3)"
           }}>
-            L
+            D
           </div>
-          <div className="brand-text" style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
-            <span style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: "1px", textTransform: "uppercase" }}>
-              LET&apos;S
-            </span>
-            <span style={{ fontSize: 12, color: "var(--lp-blue)", fontWeight: 800, letterSpacing: "2px", textTransform: "uppercase" }}>
-              PLAY
-            </span>
-          </div>
+          <span style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "2px", textTransform: "uppercase" }}>
+            DPLAY
+          </span>
         </Link>
       </div>
 
@@ -133,7 +128,7 @@ export default function Navbar() {
           }}
           onClick={() => {
             if (locStatus === "granted" || locStatus === "denied") {
-              sessionStorage.removeItem("letsplay_city");
+              sessionStorage.removeItem("dplay_city");
               setLocStatus("idle"); setCity("India");
               setTimeout(() => {
                 if (!navigator.geolocation) return;
@@ -145,7 +140,7 @@ export default function Navbar() {
                       const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`, { headers: { "Accept-Language": "en" } });
                       const d = await r.json();
                       const detected = d.address?.city || d.address?.town || d.address?.county || "India";
-                      sessionStorage.setItem("letsplay_city", detected);
+                      sessionStorage.setItem("dplay_city", detected);
                       setCity(detected); setLocStatus("granted");
                     } catch { setLocStatus("denied"); }
                   },

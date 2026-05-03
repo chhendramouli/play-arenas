@@ -7,7 +7,7 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('letsplay_token');
+  const token = localStorage.getItem('dplay_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
