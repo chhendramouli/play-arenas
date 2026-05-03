@@ -36,15 +36,15 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Seed Admin User
-        if (userRepository.count() == 0) {
+        // Seed Admin User if not exists
+        if (userRepository.findByEmail("superadmin@letsplay.com").isEmpty()) {
             com.letsplay.arenas_backend.model.User admin = new com.letsplay.arenas_backend.model.User();
             admin.setName("Super Admin");
             admin.setEmail("superadmin@letsplay.com");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRole(com.letsplay.arenas_backend.model.UserRole.ADMIN);
             userRepository.save(admin);
-            System.out.println("Seeded default admin: admin@letsplay.com / admin123");
+            System.out.println("Seeded default admin: superadmin@letsplay.com / admin123");
         }
 
         if (arenaRepository.count() > 1) return;
