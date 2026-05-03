@@ -34,6 +34,7 @@ services:
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+      - TEMPORAL_UI_ENABLE_EXPERIMENTAL=true
     ports:
       - "8080:8080"
     depends_on:

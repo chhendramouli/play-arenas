@@ -66,6 +66,7 @@ services:
     environment:
       TEMPORAL_ADDRESS: temporal:7233
       TEMPORAL_CORS_ORIGINS: ${PUBLIC_FRONTEND_ORIGIN:-http://localhost:3000}
+      TEMPORAL_UI_ENABLE_EXPERIMENTAL: "true"
     depends_on:
       - temporal
     deploy:
