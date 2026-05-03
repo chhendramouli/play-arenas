@@ -39,8 +39,8 @@ public class DataInitializer implements CommandLineRunner {
         // Seed Admin User
         if (userRepository.count() == 0) {
             com.decathlon.play_arenas_backend.model.User admin = new com.decathlon.play_arenas_backend.model.User();
-            admin.setName("System Admin");
-            admin.setEmail("admin@decathlon.com");
+            admin.setName("Super Admin");
+            admin.setEmail("superadmin@decathlon.com");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRole(com.decathlon.play_arenas_backend.model.UserRole.ADMIN);
             userRepository.save(admin);

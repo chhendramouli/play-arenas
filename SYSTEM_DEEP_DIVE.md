@@ -120,7 +120,7 @@ This document provides low-level technical specifications, implementation detail
 
 | Role | Email | Password |
 | :--- | :--- | :--- |
-| **Admin** | `admin@decathlon.com` | `admin123` |
+| **Admin** | `superadmin@decathlon.com` | `admin123` |
 | **Customer** | (Register via UI) | (User defined) |
 
 > [!IMPORTANT]
