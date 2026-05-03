@@ -5,21 +5,20 @@
 > by reading this file plus `/tmp/play-arenas-facts.env` (kept on the user's
 > machine, not in the repo — it has secrets).
 >
-> **Last updated**: 2026-05-03 04:30 UTC by Claude (mid-deploy)
+> **Last updated**: 2026-05-03 04:38 UTC — **all green** ✅
 
 ---
 
-## TL;DR — What's Working
+## TL;DR — Live URLs
 
-| Component       | Status   | URL / handle                                   |
-|-----------------|----------|------------------------------------------------|
-| GitHub repo     | ✅ live  | https://github.com/chhendramouli/play-arenas   |
-| EC2 backend     | ✅ live  | https://13-235-29-120.nip.io                   |
-| Postgres (EC2)  | ✅ live  | (in-cluster only)                              |
-| Temporal (EC2)  | ✅ live  | (in-cluster only — UI proxied below)           |
-| Temporal UI     | ✅ live  | https://13-235-29-120.nip.io/temporal-ui/      |
-| Billing alarm   | ✅ armed | $1 threshold, SNS to user's email              |
-| Frontend        | ❌ failing | AWS Amplify build failing with deploy-manifest error |
+| Component       | Status  | URL                                                  |
+|-----------------|---------|------------------------------------------------------|
+| **Frontend**    | ✅ live | **https://main.d39vj530k6o7zp.amplifyapp.com**       |
+| Backend API     | ✅ live | https://13-235-29-120.nip.io/api/...                 |
+| Health probe    | ✅ live | https://13-235-29-120.nip.io/actuator/health         |
+| Temporal UI     | ✅ live | https://13-235-29-120.nip.io/temporal-ui/  (basic-auth) |
+| GitHub repo     | ✅ live | https://github.com/chhendramouli/play-arenas (public) |
+| Billing alarm   | ✅ armed | $1 threshold, SNS to user's email (confirmation pending) |
 
 ---
 
@@ -89,33 +88,29 @@ Lives at `/opt/play-arenas/deploy/.env` on the box (chmod 600). Contains:
 The plaintext temporal-UI password is stored locally in `/tmp/play-arenas-facts.env`
 under `TEMPORAL_UI_PASS`.
 
-## Frontend / Amplify status (currently FAILING)
+## Frontend / Amplify status (LIVE ✅)
 
 - **App ID**: `d39vj530k6o7zp`
 - **Default domain**: `d39vj530k6o7zp.amplifyapp.com`
+- **Live URL**: `https://main.d39vj530k6o7zp.amplifyapp.com`
 - **Branch**: `main` connected to `chhendramouli/play-arenas`
-- **Platform**: `WEB_COMPUTE` (will switch to `WEB` for static)
+- **Platform**: `WEB` (static export)
 - **Env vars**: `NEXT_PUBLIC_API_URL=https://13-235-29-120.nip.io`
 
-### Failure
+The frontend is a Next.js 16 app exported as static HTML
+(`output: 'export'` in `frontend/next.config.ts`). All data loading happens
+client-side against the EC2 backend.
 
-Both jobs 1 and 2 failed at the build's final step:
-```
-Failed to find the deploy-manifest.json file in the build output.
-```
-The Next.js compile succeeds, but Amplify's framework adapter for
-`WEB_COMPUTE` Next.js doesn't generate the deploy manifest — likely a Next.js
-16 + Amplify Compute compatibility gap.
+### Why static, not SSR
 
-### Recovery plan in progress
+We tried `WEB_COMPUTE` (SSR) first; jobs 1-3 failed with `deploy-manifest.json
+not found` — a known Next.js 16 + Amplify Compute compatibility gap. Pivoting
+to static export was simpler, free-tier friendly, and works perfectly because
+this app is purely client-rendered React + REST.
 
-1. Convert `/frontend/src/app/book/[id]/page.tsx` → `/frontend/src/app/book/page.tsx`
-   (read `id` from `useSearchParams()`).
-2. Set `next.config.ts` `output: 'export'`.
-3. Update `amplify.yml` `baseDirectory: out`.
-4. Switch Amplify app platform to `WEB` (static).
-5. Push, retrigger build.
-6. Frontend URL will be `https://main.d39vj530k6o7zp.amplifyapp.com`.
+**Required code change**: the previously dynamic `/book/[id]` route was moved
+to a static `/book?id=` route to make `output: 'export'` work without
+`generateStaticParams`.
 
 ## Application admin login
 
@@ -157,13 +152,46 @@ aws sns delete-topic --region us-east-1 --topic-arn arn:aws:sns:us-east-1:776805
 
 (EBS volume is `DeleteOnTermination=true` so terminating EC2 also drops it.)
 
-## Open issues / TODO
+## Smoke tests (verified 2026-05-03 04:38 UTC)
 
-- [ ] Frontend deploy on Amplify (in progress — pivoting to static export).
-- [ ] Confirm SNS email subscription so billing alarm actually delivers.
-- [ ] Rotate the GitHub PAT used for this deploy. It was used for the
-      `aws amplify create-app --access-token` step and lives only in Amplify's
-      encrypted store + the user's local shell history. The token is NOT
-      committed anywhere in this repo. Revoke at:
-      https://github.com/settings/tokens
-- [ ] After 12 months: tear down per the checklist above, or move to t4g.small.
+```bash
+# 1. Frontend reachable
+curl -sI https://main.d39vj530k6o7zp.amplifyapp.com | head -1
+# HTTP/2 200
+
+# 2. Backend health
+curl -s https://13-235-29-120.nip.io/actuator/health | jq .status
+# "UP"
+
+# 3. CORS preflight from Amplify origin
+curl -sX OPTIONS -H "Origin: https://main.d39vj530k6o7zp.amplifyapp.com" \
+     -H "Access-Control-Request-Method: GET" \
+     https://13-235-29-120.nip.io/api/arenas -o /dev/null -w "%{http_code}\n"
+# 200
+
+# 4. Public arena list
+curl -s https://13-235-29-120.nip.io/api/arenas | jq 'length'
+# 37
+
+# 5. Signup -> JWT
+curl -s -X POST https://13-235-29-120.nip.io/api/auth/signup \
+     -H "Content-Type: application/json" \
+     -d '{"email":"smoke@test.com","password":"test1234","name":"Smoke"}'
+# {"user": {...}, "token": "eyJ..."}
+```
+
+## Open follow-ups
+
+- [ ] Confirm SNS email subscription so the $1 billing alarm actually delivers.
+      Click the link in the AWS confirmation email to user@gmail.com.
+- [ ] Rotate the GitHub PAT used for this deploy (the same one is stored,
+      encrypted, in Amplify so it can poll the repo). Revoke and reissue at
+      https://github.com/settings/tokens then update the Amplify access token
+      via `aws amplify update-app --app-id d39vj530k6o7zp --access-token <new>`.
+      The token is NOT committed in this repo.
+- [ ] (Optional) Buy a custom domain and put CloudFront + ACM in front of the
+      EC2 backend so users see a friendly hostname instead of the IP-based
+      `13-235-29-120.nip.io`. Estimated: $0.50/mo Route 53 hosted zone +
+      domain registration cost.
+- [ ] After 12 months of free tier: tear down per the checklist above, or
+      move EC2 to `t4g.small` (~$15/mo) for steady production load.
