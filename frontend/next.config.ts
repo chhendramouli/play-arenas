@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
 
+// Static export — produces an `out/` directory of plain HTML/JS/CSS that we host
+// on AWS Amplify (platform=WEB). All data fetching happens client-side against
+// the backend API on EC2 (NEXT_PUBLIC_API_URL). No SSR needed.
 const nextConfig: NextConfig = {
-  // Required for AWS Amplify Hosting on the WEB_COMPUTE platform: produces a
-  // self-contained server bundle in .next/standalone that Amplify wraps into
-  // its deploy-manifest.json automatically.
-  output: "standalone",
+  output: "export",
+  images: { unoptimized: true },
 };
 
 export default nextConfig;

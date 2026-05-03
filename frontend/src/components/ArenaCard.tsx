@@ -23,7 +23,9 @@ export default function ArenaCard({ arena, date }: { arena: Arena; date?: string
   const rating = (4.0 + (seededNum(arena.id, 1) % 10) / 10).toFixed(1);
   const reviews = 20 + (seededNum(arena.id, 2) % 180);
   const slotsOpen = 2 + (seededNum(arena.id, 3) % 8);
-  const href = date ? `/book/${arena.id}?date=${encodeURIComponent(date)}` : `/book/${arena.id}`;
+  const href = date
+    ? `/book?id=${encodeURIComponent(arena.id)}&date=${encodeURIComponent(date)}`
+    : `/book?id=${encodeURIComponent(arena.id)}`;
 
   return (
     <Link href={href} className="arena-card" style={{ padding: 0, overflow: "hidden" }}>

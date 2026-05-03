@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { Arena } from "@/components/types";
 import { useAuth } from "@/components/AuthContext";
 import Link from "next/link";
@@ -35,10 +35,26 @@ const fmtDate = (d: Date) => {
 const fmtHour = (h: number) =>
   `${h.toString().padStart(2, "0")}:00 – ${(h + 1).toString().padStart(2, "0")}:00`;
 
-export default function BookPage({ params }: { params: Promise<{ id: string }> }) {
+// Page wrapper providing the Suspense boundary required for useSearchParams()
+// in static-export builds (Next.js 15+).
+export default function BookPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="page-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 64px)" }}>
+        <p style={{ color: "var(--muted)" }}>Loading…</p>
+      </div>
+    }>
+      <BookPage />
+    </Suspense>
+  );
+}
+
+function BookPage() {
   const { user, authFetch } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  // /book?id=<uuid>&date=<yyyy-mm-dd>  (route is no longer dynamic — easier to host statically)
+  const arenaIdFromQuery = searchParams.get("id");
 
   const [arena,       setArena]       = useState<Arena | null | "not-found">(null);
   const [bookingId,   setBookingId]   = useState<string | null>(null);
@@ -58,16 +74,17 @@ export default function BookPage({ params }: { params: Promise<{ id: string }> }
   const [available,    setAvailable]    = useState<number[]>([]);
   const [bookedHours,  setBookedHours]  = useState<number[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
-  const [arenaId,      setArenaId]      = useState<string>("");
+  const [arenaId,      setArenaId]      = useState<string>(arenaIdFromQuery ?? "");
 
   useEffect(() => {
-    params.then(async ({ id }) => {
-      setArenaId(id);
-      const r = await fetch(`${API}/api/arenas/${id}`);
+    if (!arenaIdFromQuery) { setArena("not-found"); return; }
+    setArenaId(arenaIdFromQuery);
+    (async () => {
+      const r = await fetch(`${API}/api/arenas/${arenaIdFromQuery}`);
       if (!r.ok) { setArena("not-found"); return; }
       setArena(await r.json());
-    });
-  }, [params]);
+    })();
+  }, [arenaIdFromQuery]);
 
   const loadSlots = useCallback(async () => {
     if (!arenaId) return;
