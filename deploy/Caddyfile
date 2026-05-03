@@ -1,0 +1,43 @@
+# Caddyfile — automatic HTTPS via Let's Encrypt for {$PUBLIC_HOST}
+# {$PUBLIC_HOST} is something like "13-201-xx-xx.nip.io" — no domain registration needed.
+# Caddy proxies:
+#   /api/*           → backend:8090
+#   /actuator/*      → backend:8090
+#   /temporal-ui/*   → temporal-ui:8080  (basic-auth protected)
+#   everything else  → 404 (frontend lives on Amplify)
+
+{
+    email {$ADMIN_EMAIL}
+    # ACME prod (default). Caddy falls back to HTTP-01 challenge automatically.
+}
+
+{$PUBLIC_HOST} {
+    encode gzip
+
+    # Backend API + actuator
+    @api path /api/* /actuator/*
+    handle @api {
+        reverse_proxy backend:8090 {
+            header_up X-Forwarded-Host {host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Temporal UI behind basic auth
+    handle_path /temporal-ui/* {
+        basicauth {
+            {$TEMPORAL_UI_USER} {$TEMPORAL_UI_HASH}
+        }
+        reverse_proxy temporal-ui:8080
+    }
+
+    # Health probe
+    handle /healthz {
+        respond "ok" 200
+    }
+
+    # Default: 404 (frontend is on Amplify, not here)
+    handle {
+        respond "play-arenas backend — frontend lives on Amplify" 200
+    }
+}

@@ -13,7 +13,9 @@ const ICONS: Record<string, string> = {
   Tennis:   "🎾", Cricket:    "🏏", Swimming:  "🏊",
 };
 
-export default function VenuesPage() {
+import { Suspense } from "react";
+
+function VenuesContent() {
   const sp     = useSearchParams();
   const router = useRouter();
   const initialSport = sp.get("sport") ?? "All";
@@ -133,5 +135,13 @@ export default function VenuesPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function VenuesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VenuesContent />
+    </Suspense>
   );
 }

@@ -1,0 +1,69 @@
+#!/bin/bash
+# EC2 user-data — runs once on first boot as root.
+# Placeholders replaced by the launch script before submission:
+#   __PUBLIC_HOST__               (e.g. 13-201-xx-xx.nip.io)
+#   __APP_CORS_ALLOWED_ORIGINS__  (e.g. http://localhost:3000,https://main.dxxxxx.amplifyapp.com)
+#   __JWT_SECRET__                (random 64-byte hex)
+#   __TEMPORAL_UI_USER__          (default: admin)
+#   __TEMPORAL_UI_HASH__          (Caddy bcrypt hash of password)
+#   __ADMIN_EMAIL__               (LE registration)
+#   __REPO_URL__                  (https://github.com/<user>/play-arenas.git)
+#   __REPO_BRANCH__               (default: main)
+set -euxo pipefail
+
+exec > >(tee /var/log/userdata.log) 2>&1
+echo "userdata starting: $(date -u)"
+
+# 1) System update + 2 GB swap (t3.micro has 1 GB RAM — JVM benefits from swap)
+dnf -y update
+fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo "/swapfile none swap sw 0 0" >> /etc/fstab
+
+# 2) Docker + compose plugin
+dnf -y install docker git
+systemctl enable --now docker
+mkdir -p /usr/libexec/docker/cli-plugins
+curl -fsSL -o /usr/libexec/docker/cli-plugins/docker-compose \
+  https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64
+chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+docker compose version
+
+# 3) Clone repo
+mkdir -p /opt
+cd /opt
+if [ ! -d /opt/play-arenas ]; then
+  git clone --depth 1 -b __REPO_BRANCH__ __REPO_URL__ play-arenas
+fi
+cd /opt/play-arenas
+
+# 4) Render env file for compose
+cat > /opt/play-arenas/deploy/.env <<EOF
+PUBLIC_HOST=__PUBLIC_HOST__
+ADMIN_EMAIL=__ADMIN_EMAIL__
+APP_CORS_ALLOWED_ORIGINS=__APP_CORS_ALLOWED_ORIGINS__
+JWT_SECRET=__JWT_SECRET__
+TEMPORAL_UI_USER=__TEMPORAL_UI_USER__
+TEMPORAL_UI_HASH=__TEMPORAL_UI_HASH__
+PUBLIC_FRONTEND_ORIGIN=__PUBLIC_FRONTEND_ORIGIN__
+POSTGRES_USER=decathlon
+POSTGRES_PASSWORD=decathlon
+POSTGRES_DB=decathlon_play
+BACKEND_IMAGE=play-arenas-backend:local
+EOF
+chmod 600 /opt/play-arenas/deploy/.env
+
+# 5) Build backend image (multi-stage Dockerfile is in /opt/play-arenas/backend)
+cd /opt/play-arenas/deploy
+docker compose --env-file .env -f docker-compose.prod.yml build backend
+
+# 6) Bring everything up
+docker compose --env-file .env -f docker-compose.prod.yml up -d
+
+# 7) Tag a healthcheck for cloud-init
+sleep 5
+docker compose --env-file .env -f docker-compose.prod.yml ps > /var/log/compose-ps.log
+
+echo "userdata finished: $(date -u)"

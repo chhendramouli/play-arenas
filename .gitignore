@@ -1,0 +1,27 @@
+# Build outputs
+**/target/
+**/.next/
+**/node_modules/
+**/dist/
+**/build/
+
+# Logs
+*.log
+**/*.log
+
+# IDE / editor
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Env files (NEVER commit)
+.env
+.env.local
+.env.*.local
+backend/src/main/resources/application-local.properties
+
+# Deploy artifacts (generated locally)
+*.pem
+deploy/*.local
+.aws-credentials
