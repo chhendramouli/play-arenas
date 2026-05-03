@@ -1,6 +1,7 @@
 package com.decathlon.play_arenas_backend.config;
 
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactory;
@@ -14,6 +15,9 @@ public class TemporalConfig {
     @Value("${temporal.host:localhost:7233}")
     private String temporalHost;
 
+    @Value("${temporal.namespace:default}")
+    private String temporalNamespace;
+
     public static final String BOOKING_TASK_QUEUE = "BOOKING_TASK_QUEUE";
 
     @Bean
@@ -25,7 +29,10 @@ public class TemporalConfig {
 
     @Bean
     public WorkflowClient workflowClient(WorkflowServiceStubs workflowServiceStubs) {
-        return WorkflowClient.newInstance(workflowServiceStubs);
+        return WorkflowClient.newInstance(
+            workflowServiceStubs,
+            WorkflowClientOptions.newBuilder().setNamespace(temporalNamespace).build()
+        );
     }
 
     @Bean
