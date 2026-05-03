@@ -140,7 +140,9 @@ export default function AdminPage() {
   const confirmed = bookings.filter(b => b.status === "CONFIRMED").length;
   const pending   = bookings.filter(b => b.status === "PENDING").length;
   const failed    = bookings.filter(b => b.status === "CANCELLED" || b.status === "FAILED").length;
-  const dbStatus  = health?.components?.db?.status ?? (health?.status) ?? "UNKNOWN";
+  const dbStatus      = health?.components?.db?.status ?? health?.status ?? "UNKNOWN";
+  const apiStatus     = health ? "UP" : "DOWN";
+  const temporalUp    = health?.status === "UP";
   const allBookings = [...bookings].sort((a, b) =>
     new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
   );
@@ -169,7 +171,7 @@ export default function AdminPage() {
       {/* Navbar */}
       <nav className="navbar">
         <div className="admin-brand" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, background: "var(--lp-blue)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18, borderRadius: 4 }}>D</div>
+          <div style={{ width: 32, height: 32, background: "var(--lp-blue)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18, borderRadius: 4 }}>L</div>
           <span className="logo-text">Back Office</span>
           <span style={{ fontSize: 10, color: "var(--accent)", background: "rgba(0,180,216,.1)", border: "1px solid var(--accent)", borderRadius: 4, padding: "2px 8px", fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase" }}>ADMIN</span>
         </div>
@@ -186,8 +188,8 @@ export default function AdminPage() {
         <div className="glass health-strip" style={{ padding: "12px 20px", marginBottom: 28, display: "flex", alignItems: "center", gap: 24, background: "var(--surface-2)" }}>
           {[
             { label: `Database: ${dbStatus}`, up: dbStatus === "UP" },
-            { label: "API Gateway: UP", up: true },
-            { label: "Temporal Worker: ACTIVE", up: true },
+            { label: `API Gateway: ${apiStatus}`, up: apiStatus === "UP" },
+            { label: `Temporal Worker: ${temporalUp ? "ACTIVE" : "UNKNOWN"}`, up: temporalUp },
           ].map(s => (
             <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.up ? "var(--accent)" : "#f87171", boxShadow: `0 0 8px ${s.up ? "var(--accent)" : "#f87171"}` }} />

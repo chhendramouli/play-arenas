@@ -19,7 +19,7 @@ const SC: Record<string, { icon: string; bg: string; color: string }> = {
 };
 
 // Let's Play Blue
-const DKT_BLUE = "#007bc4";
+const DKT_BLUE = "#3643ba";
 
 type Status = "IDLE" | "BOOKING" | "PAYMENT" | "SUCCESS" | "FAILED";
 

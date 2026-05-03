@@ -48,7 +48,7 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("Seeded default admin: superadmin@letsplay.com / admin123");
         }
 
-        if (arenaRepository.count() > 1) return;
+        if (arenaRepository.count() > 0) return;
 
         arenaRepository.saveAll(List.of(
             // ── Mumbai ──────────────────────────────────────────────────
