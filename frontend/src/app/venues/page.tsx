@@ -7,10 +7,11 @@ import { useSearchParams, useRouter } from "next/navigation";
 import apiClient from "@/components/apiClient";
 import { ArenaSkeleton } from "@/components/Skeletons";
 
-const SPORTS = ["All", "Football", "Basketball", "Badminton", "Tennis", "Cricket", "Swimming"];
+const SPORTS = ["All", "Football", "Basketball", "Badminton", "Tennis", "Cricket", "Swimming", "Squash", "Volleyball", "Table Tennis", "Kabaddi"];
 const ICONS: Record<string, string> = {
   Football: "⚽", Basketball: "🏀", Badminton: "🏸",
-  Tennis:   "🎾", Cricket:    "🏏", Swimming:  "🏊",
+  Tennis: "🎾", Cricket: "🏏", Swimming: "🏊",
+  Squash: "🎯", Volleyball: "🏐", "Table Tennis": "🏓", Kabaddi: "🤼",
 };
 
 import { Suspense } from "react";
