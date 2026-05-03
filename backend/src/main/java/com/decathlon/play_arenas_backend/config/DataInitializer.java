@@ -13,9 +13,15 @@ import java.util.List;
 public class DataInitializer implements CommandLineRunner {
 
     private final ArenaRepository arenaRepository;
+    private final com.decathlon.play_arenas_backend.repository.UserRepository userRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public DataInitializer(ArenaRepository arenaRepository) {
+    public DataInitializer(ArenaRepository arenaRepository, 
+                          com.decathlon.play_arenas_backend.repository.UserRepository userRepository,
+                          org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.arenaRepository = arenaRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     private Arena arena(String name, String location, String sport, double price, String img) {
@@ -30,6 +36,17 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        // Seed Admin User
+        if (userRepository.count() == 0) {
+            com.decathlon.play_arenas_backend.model.User admin = new com.decathlon.play_arenas_backend.model.User();
+            admin.setName("System Admin");
+            admin.setEmail("admin@decathlon.com");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setRole(com.decathlon.play_arenas_backend.model.UserRole.ADMIN);
+            userRepository.save(admin);
+            System.out.println("Seeded default admin: admin@decathlon.com / admin123");
+        }
+
         if (arenaRepository.count() > 1) return;
 
         arenaRepository.saveAll(List.of(
