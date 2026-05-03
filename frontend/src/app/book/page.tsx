@@ -10,7 +10,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8090";
 
 const SC: Record<string, { icon: string; bg: string; color: string }> = {
   Football:   { icon: "⚽", bg: "rgba(16,185,129,0.1)", color: "#10b981" },
-  Basketball: { icon: "🏀", bg: "rgba(245,158,11,0.1)",  color: "#f59e0b" },
+  Basketball: { icon: "🏀", bg: "rgba(54, 67, 186, 0.1)",  color: "#3643ba" },
   Badminton:  { icon: "🏸", bg: "rgba(99,102,241,0.1)",  color: "#6366f1" },
   Tennis:     { icon: "🎾", bg: "rgba(239,68,68,0.1)",   color: "#ef4444" },
   Cricket:    { icon: "🏏", bg: "rgba(59,130,246,0.1)",  color: "#3b82f6" },
@@ -204,7 +204,7 @@ function BookPage() {
 
           {(status === "IDLE" || status === "BOOKING" || status === "PAYMENT") && (
             <>
-              <div className="premium-glass" style={{ padding: 28, marginBottom: 20, borderRadius: 24, opacity: status === "PAYMENT" ? 0.6 : 1, pointerEvents: status === "PAYMENT" ? "none" : "auto" }}>
+              <div className="premium-glass" style={{ padding: 28, marginBottom: 20, borderRadius: 24, pointerEvents: status === "PAYMENT" ? "none" : "auto" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                   <h2 style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>1. Pick a Date</h2>
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>Availability for 4 weeks</span>
@@ -229,7 +229,7 @@ function BookPage() {
                 </div>
               </div>
 
-              <div className="premium-glass" style={{ padding: 28, marginBottom: 20, borderRadius: 24, opacity: status === "PAYMENT" ? 0.6 : 1, pointerEvents: status === "PAYMENT" ? "none" : "auto" }}>
+              <div className="premium-glass" style={{ padding: 28, marginBottom: 20, borderRadius: 24, pointerEvents: status === "PAYMENT" ? "none" : "auto" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                   <h2 style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>2. Select Time</h2>
                   <div style={{ display: "flex", gap: 12 }}>
