@@ -91,8 +91,8 @@ export default function Navbar() {
       {/* Left: Logo */}
       <div style={{ display: "flex", alignItems: "center" }}>
         <Link href="/" className="brand-link" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <span style={{ fontSize: 28, fontWeight: 900, letterSpacing: "0px", textTransform: "uppercase" }}>
-            <span style={{ color: "#a5b4fc" }}>D</span><span style={{ color: "#fff" }}>PLAY</span>
+          <span style={{ fontSize: 26, fontWeight: 900, letterSpacing: "1px", textTransform: "uppercase" }}>
+            <span style={{ color: "#c7d2fe" }}>D</span><span style={{ color: "#fff" }}>PLAY</span>
           </span>
         </Link>
       </div>
