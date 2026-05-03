@@ -19,7 +19,10 @@ const SC: Record<string, { icon: string; bg: string; color: string }> = {
 
 type Status = "IDLE" | "BOOKING" | "PAYMENT" | "SUCCESS" | "FAILED";
 
-const ALL_HOURS = Array.from({ length: 19 }, (_, i) => i + 5); // 5 AM to 11 PM (23:00)
+// Grouping hours for tabs
+const MORNING_HOURS   = Array.from({ length: 7 }, (_, i) => i + 5);  // 5 AM - 11 AM
+const AFTERNOON_HOURS = Array.from({ length: 5 }, (_, i) => i + 12); // 12 PM - 4 PM
+const EVENING_HOURS   = Array.from({ length: 7 }, (_, i) => i + 17); // 5 PM - 11 PM
 
 const getDates = () => Array.from({ length: 28 }, (_, i) => {
   const d = new Date(); d.setDate(d.getDate() + i); return d;
@@ -67,7 +70,7 @@ function BookPage() {
   const initialDate = queryDate && validDates.includes(queryDate) ? queryDate : fmtDate(dates[0]);
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
-  const [available,    setAvailable]    = useState<number[]>([]);
+  const [activeTab,    setActiveTab]    = useState<"morning" | "afternoon" | "evening">("morning");
   const [bookedHours,  setBookedHours]  = useState<number[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [arenaId,      setArenaId]      = useState<string>(arenaIdFromQuery ?? "");
@@ -88,11 +91,9 @@ function BookPage() {
     try {
       const r = await fetch(`${API}/api/arenas/${arenaId}/slots?date=${selectedDate}`);
       const d = await r.json();
-      setAvailable(d.availableHours ?? []);
       const bh = d.bookedHours;
       setBookedHours(Array.isArray(bh) ? bh : Object.values(bh ?? {}));
     } catch {
-      setAvailable([]);
       setBookedHours([]);
     } finally {
       setSlotsLoading(false);
@@ -187,265 +188,222 @@ function BookPage() {
   const currentHour = now.getHours();
   const isPastHour = (h: number) => isToday && h <= currentHour;
 
+  const currentHours = activeTab === "morning" ? MORNING_HOURS : activeTab === "afternoon" ? AFTERNOON_HOURS : EVENING_HOURS;
+
   return (
     <div className="page-bg">
-      <div className="book-wrap" style={{ maxWidth: 640 }}>
+      <div className="book-layout-container">
         
-        {/* Modern Header Section */}
-        <div className="glass" style={{ padding: 28, marginBottom: 20, overflow: "hidden", position: "relative" }}>
-          <div style={{ position: "absolute", top: -20, right: -20, fontSize: 120, opacity: 0.05, pointerEvents: "none" }}>{cfg.icon}</div>
-          <div style={{ display: "flex", gap: 20, alignItems: "center", position: "relative" }}>
-            <div style={{ background: cfg.bg, width: 72, height: 72, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, border: `1px solid ${cfg.color}33` }}>
-              {cfg.icon}
-            </div>
-            <div style={{ flex: 1 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: cfg.color, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4, display: "block" }}>{arena.sportType} Venue</span>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 6 }}>{arena.name}</h1>
-              <p style={{ fontSize: 14, color: "var(--muted)", display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ color: cfg.color }}>📍</span> {arena.location}
-              </p>
+        {/* Left Column: Details & Slots */}
+        <div className="book-main-col">
+          
+          {/* Header Card */}
+          <div className="glass" style={{ padding: 28, marginBottom: 20, overflow: "hidden", position: "relative" }}>
+            <div style={{ position: "absolute", top: -20, right: -20, fontSize: 120, opacity: 0.05, pointerEvents: "none" }}>{cfg.icon}</div>
+            <div style={{ display: "flex", gap: 20, alignItems: "center", position: "relative" }}>
+              <div style={{ background: cfg.bg, width: 72, height: 72, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, border: `1px solid ${cfg.color}33` }}>
+                {cfg.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: cfg.color, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4, display: "block" }}>{arena.sportType} Venue</span>
+                <h1 style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 6 }}>{arena.name}</h1>
+                <p style={{ fontSize: 14, color: "var(--muted)", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ color: cfg.color }}>📍</span> {arena.location}
+                </p>
+              </div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
-            <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", padding: "12px 16px", borderRadius: 12, border: "1px solid var(--border)" }}>
-              <p style={{ fontSize: 10, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Price</p>
-              <p style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>{fmt(arena.pricePerHour)}<span style={{ fontSize: 12, fontWeight: 500, color: "var(--muted)" }}> / hr</span></p>
-            </div>
-            <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", padding: "12px 16px", borderRadius: 12, border: "1px solid var(--border)" }}>
-              <p style={{ fontSize: 10, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Status</p>
-              <p style={{ fontSize: 16, fontWeight: 800, color: "#10b981" }}>Available</p>
-            </div>
-          </div>
-        </div>
 
-        {/* Slot selection logic container */}
-        {(status === "IDLE" || status === "BOOKING") && (
-          <div className="glass" style={{ padding: 28, marginBottom: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 20 }}>
-              <div>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Schedule Your Session</h2>
-                <p style={{ fontSize: 13, color: "var(--muted)" }}>Select a date and time that works for you.</p>
-              </div>
-            </div>
-
-            {/* Date Selection Strip */}
-            <div className="date-strip" style={{ marginBottom: 24 }}>
-              {dates.map((d, i) => {
-                const iso = fmtDate(d);
-                const isSelected = iso === selectedDate;
-                return (
-                  <button
-                    key={iso}
-                    onClick={() => setSelectedDate(iso)}
-                    className={`date-chip ${isSelected ? "date-chip-active" : ""}`}
-                    style={{ transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)", animation: `fadeIn 0.3s ease forwards ${i * 0.02}s` }}
-                  >
-                    <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", opacity: isSelected ? 1 : 0.6 }}>
-                      {d.toLocaleDateString("en-IN", { weekday: "short" })}
-                    </span>
-                    <span style={{ fontSize: 18, fontWeight: 800 }}>{d.getDate()}</span>
-                    <span style={{ fontSize: 10, opacity: isSelected ? 1 : 0.6 }}>{d.toLocaleDateString("en-IN", { month: "short" })}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div style={{ height: 1, background: "var(--border)", marginBottom: 24 }} />
-
-            {/* Time Slot Selection */}
-            <div className="slot-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: cfg.color }}></span> Available Slots
-              </p>
-              <div style={{ display: "flex", gap: 12 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--muted)" }}>
-                  <span style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(239,68,68,0.2)", border: "1px solid rgba(239,68,68,0.4)" }}></span> Booked
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--muted)" }}>
-                  <span style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)" }}></span> Past
-                </div>
-              </div>
-            </div>
-
-            {slotsLoading ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} style={{ height: 48, background: "rgba(255,255,255,0.03)", borderRadius: 12, animation: "pulse 1.5s infinite" }} />
-                ))}
-              </div>
-            ) : (
-              <div className="slot-grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
-                {ALL_HOURS.map((h, i) => {
-                  const isBooked = bookedHours.includes(h);
-                  const isPast   = isPastHour(h);
-                  const isDisabled = isBooked || isPast;
-                  const isSelected = selectedHour === h;
-
-                  return (
-                    <button
-                      key={h}
-                      disabled={isDisabled}
-                      onClick={() => setSelectedHour(isSelected ? null : h)}
-                      className={`slot-btn ${isSelected ? "slot-active" : ""} ${isBooked ? "slot-booked" : ""} ${isPast ? "slot-past" : ""}`}
-                      style={{ 
-                        padding: "14px", 
-                        borderRadius: 12, 
-                        fontSize: 14, 
-                        fontWeight: isSelected ? 800 : 600,
-                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                        animation: `fadeIn 0.3s ease forwards ${i * 0.01}s`,
-                        background: isSelected ? cfg.color : (isDisabled ? "" : "rgba(255,255,255,0.03)"),
-                        color: isSelected ? "#000" : (isDisabled ? "rgba(255,255,255,0.2)" : "#fff"),
-                        border: isSelected ? `1px solid ${cfg.color}` : "1px solid var(--border)"
-                      }}
-                    >
-                      {fmtHour(h)}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Checkout / Summary Section */}
-        <div className="glass" style={{ padding: 28 }}>
-          {status === "IDLE" && (
+          {(status === "IDLE" || status === "BOOKING") && (
             <>
-              <div style={{ marginBottom: 24 }}>
-                <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Review Order</h3>
-                <p style={{ fontSize: 13, color: "var(--muted)" }}>Slot will be held for 2 minutes during payment.</p>
-              </div>
-              
-              <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 16, padding: 20, border: "1px solid var(--border)", marginBottom: 24 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14, fontSize: 14 }}>
-                  <span style={{ color: "var(--muted)" }}>Reservation Date</span>
-                  <span style={{ color: "#fff", fontWeight: 700 }}>{selectedDate}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14, fontSize: 14 }}>
-                  <span style={{ color: "var(--muted)" }}>Time Slot</span>
-                  <span style={{ color: "#fff", fontWeight: 700 }}>{selectedHour !== null ? fmtHour(selectedHour) : "—"}</span>
-                </div>
-                <div style={{ height: 1, background: "var(--border)", margin: "14px 0" }} />
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, fontSize: 14 }}>
-                  <span style={{ color: "var(--muted)" }}>Subtotal</span>
-                  <span style={{ color: "#fff", fontWeight: 600 }}>{fmt(arena.pricePerHour)}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 18, fontSize: 14 }}>
-                  <span style={{ color: "var(--muted)" }}>GST (18%)</span>
-                  <span style={{ color: "#fff", fontWeight: 600 }}>{fmt(tax)}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>Total Payable</span>
-                  <span style={{ fontSize: 24, fontWeight: 900, color: cfg.color }}>{fmt(total)}</span>
+              {/* Date Selector */}
+              <div className="glass" style={{ padding: 24, marginBottom: 20 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 16 }}>Select Date</h2>
+                <div className="date-strip">
+                  {dates.map((d) => {
+                    const iso = fmtDate(d);
+                    const isSelected = iso === selectedDate;
+                    return (
+                      <button
+                        key={iso}
+                        onClick={() => setSelectedDate(iso)}
+                        className={`date-chip ${isSelected ? "date-chip-active" : ""}`}
+                        style={{ background: isSelected ? cfg.color : "var(--surface)", border: isSelected ? `1px solid ${cfg.color}` : "1px solid var(--border)" }}
+                      >
+                        <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", opacity: isSelected ? 1 : 0.6 }}>{d.toLocaleDateString("en-IN", { weekday: "short" })}</span>
+                        <span style={{ fontSize: 18, fontWeight: 800 }}>{d.getDate()}</span>
+                        <span style={{ fontSize: 10, opacity: isSelected ? 1 : 0.6 }}>{d.toLocaleDateString("en-IN", { month: "short" })}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <button
-                id="hold-slot-btn"
-                onClick={hold}
-                disabled={selectedHour === null}
-                className="btn-primary"
-                style={{ 
-                  width: "100%", 
-                  padding: 18, 
-                  fontSize: 16, 
-                  borderRadius: 14, 
-                  background: selectedHour === null ? "rgba(255,255,255,0.05)" : cfg.color,
-                  color: selectedHour === null ? "rgba(255,255,255,0.2)" : "#000",
-                  border: "none",
-                  cursor: selectedHour === null ? "not-allowed" : "pointer",
-                  transition: "all 0.3s ease"
-                }}
-              >
-                {user ? "Confirm & Proceed to Payment" : "Sign In to Book Now"}
-              </button>
+              {/* Time Tabbed Selector */}
+              <div className="glass" style={{ padding: 24, marginBottom: 20 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 16 }}>Select Time Slot</h2>
+                
+                {/* Tabs */}
+                <div style={{ display: "flex", gap: 8, background: "rgba(255,255,255,0.03)", padding: 4, borderRadius: 12, marginBottom: 20 }}>
+                  <button onClick={() => setActiveTab("morning")} className={`tab-btn ${activeTab === "morning" ? "active" : ""}`}>🌅 Morning</button>
+                  <button onClick={() => setActiveTab("afternoon")} className={`tab-btn ${activeTab === "afternoon" ? "active" : ""}`}>☀️ Afternoon</button>
+                  <button onClick={() => setActiveTab("evening")} className={`tab-btn ${activeTab === "evening" ? "active" : ""}`}>🌙 Evening</button>
+                </div>
+
+                {slotsLoading ? (
+                  <div className="slots-placeholder">Loading availability...</div>
+                ) : (
+                  <div className="slot-grid-optimized">
+                    {currentHours.map((h) => {
+                      const isBooked = bookedHours.includes(h);
+                      const isPast   = isPastHour(h);
+                      const isDisabled = isBooked || isPast;
+                      const isSelected = selectedHour === h;
+                      return (
+                        <button
+                          key={h}
+                          disabled={isDisabled}
+                          onClick={() => setSelectedHour(isSelected ? null : h)}
+                          className={`slot-btn-premium ${isSelected ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
+                          style={{ border: isSelected ? `2px solid ${cfg.color}` : "1px solid var(--border)" }}
+                        >
+                          <span style={{ fontSize: 14, fontWeight: 700 }}>{fmtHour(h)}</span>
+                          <span style={{ fontSize: 10, opacity: 0.6 }}>{isBooked ? "Not Available" : isPast ? "Elapsed" : "Available"}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </>
           )}
 
-          {status === "BOOKING" && (
-            <div className="result" style={{ padding: "40px 0" }}>
-              <div className="loader" style={{ margin: "0 auto 24px" }} />
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Locking your slot...</h2>
-              <p style={{ fontSize: 14, color: "var(--muted)" }}>We're holding this for you. Just a second!</p>
+          {/* Success / Failure Views (Non-tabbed) */}
+          {(status === "SUCCESS" || status === "FAILED") && (
+            <div className="glass" style={{ padding: 40, textAlign: "center" }}>
+               {status === "SUCCESS" ? (
+                 <div style={{ animation: "fadeIn 0.5s ease" }}>
+                    <div style={{ fontSize: 72, marginBottom: 20 }}>✅</div>
+                    <h2 style={{ fontSize: 28, fontWeight: 900, color: "#fff", marginBottom: 12 }}>All Set!</h2>
+                    <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 32 }}>Your booking at {arena.name} is confirmed.</p>
+                    <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                      <Link href="/bookings" className="btn-primary" style={{ padding: "14px 28px", borderRadius: 12, background: "#fff", color: "#000" }}>Manage Bookings</Link>
+                      <Link href="/venues" className="btn-ghost" style={{ padding: "14px 28px", borderRadius: 12 }}>Browse More</Link>
+                    </div>
+                 </div>
+               ) : (
+                 <div>
+                    <div style={{ fontSize: 72, marginBottom: 20 }}>❌</div>
+                    <h2 style={{ fontSize: 28, fontWeight: 900, color: "#fff", marginBottom: 12 }}>Booking Failed</h2>
+                    <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 32 }}>The session timed out or payment was declined.</p>
+                    <button onClick={resetBooking} className="btn-primary" style={{ padding: "14px 28px", borderRadius: 12, background: "#ef4444" }}>Try Again</button>
+                 </div>
+               )}
             </div>
           )}
-
-          {status === "PAYMENT" && (
-            <div style={{ textAlign: "center", padding: "10px 0" }}>
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
-                <div className={`countdown ${countdown < 30 ? "cd-urgent" : "cd-safe"}`} style={{ fontSize: 32, padding: "12px 24px", background: "rgba(255,255,255,0.03)", borderRadius: 16, border: "1px solid var(--border)" }}>
-                  {mm}:{ss}
-                </div>
-              </div>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 12 }}>Awaiting Payment</h2>
-              <p style={{ fontSize: 14, color: "var(--muted)", marginBottom: 32, maxWidth: 360, marginInline: "auto" }}>
-                Complete the transaction to finalize your booking for <span style={{ color: "#fff", fontWeight: 700 }}>{bookedDate}</span> at <span style={{ color: "#fff", fontWeight: 700 }}>{bookedHour !== null ? fmtHour(bookedHour) : "—"}</span>.
-              </p>
-              <div style={{ display: "flex", gap: 14 }}>
-                <button id="payment-success-btn" onClick={() => pay(true)} className="btn-ok" style={{ padding: 16, borderRadius: 12 }}>Pay {fmt(total)}</button>
-                <button id="payment-fail-btn" onClick={() => pay(false)} className="btn-err" style={{ padding: 16, borderRadius: 12, background: "transparent", border: "1px solid rgba(239,68,68,0.4)", color: "#ef4444" }}>Cancel</button>
-              </div>
-            </div>
-          )}
-
-          {status === "SUCCESS" && (
-            <div className="result" style={{ animation: "fadeIn 0.5s ease" }}>
-              <div style={{ fontSize: 72, marginBottom: 20 }}>✅</div>
-              <h2 style={{ fontSize: 28, fontWeight: 900, color: "#fff", marginBottom: 12 }}>All Set!</h2>
-              <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 32 }}>Your booking at {arena.name} is confirmed.</p>
-              
-              <div style={{ background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: 16, padding: 20, marginBottom: 32, textAlign: "left" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 14 }}>
-                  <span style={{ color: "rgba(16,185,129,0.8)" }}>Date</span>
-                  <span style={{ color: "#fff", fontWeight: 700 }}>{bookedDate}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
-                  <span style={{ color: "rgba(16,185,129,0.8)" }}>Time</span>
-                  <span style={{ color: "#fff", fontWeight: 700 }}>{bookedHour !== null ? fmtHour(bookedHour) : "—"}</span>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                <Link href="/bookings" className="btn-primary" style={{ padding: "14px 28px", borderRadius: 12, background: "#fff", color: "#000" }}>Manage Bookings</Link>
-                <Link href="/venues" className="btn-ghost" style={{ padding: "14px 28px", borderRadius: 12 }}>Browse More</Link>
-              </div>
-            </div>
-          )}
-
-          {status === "FAILED" && (
-            <div className="result">
-              <div style={{ fontSize: 72, marginBottom: 20 }}>❌</div>
-              <h2 style={{ fontSize: 28, fontWeight: 900, color: "#fff", marginBottom: 12 }}>Booking Failed</h2>
-              <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 32 }}>The session timed out or payment was declined.</p>
-              <button onClick={resetBooking} className="btn-primary" style={{ padding: "14px 28px", borderRadius: 12, background: "#ef4444" }}>Try Again</button>
-            </div>
-          )}
-
         </div>
+
+        {/* Right Column / Sticky Sidebar: Checkout */}
+        {status !== "SUCCESS" && status !== "FAILED" && (
+          <div className="book-side-col">
+            <div className="glass sticky-card" style={{ padding: 24 }}>
+              {status === "IDLE" ? (
+                <>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 20 }}>Booking Summary</h3>
+                  <div className="summary-list">
+                    <div className="summary-item"><span>Date</span><strong>{selectedDate}</strong></div>
+                    <div className="summary-item"><span>Time</span><strong>{selectedHour !== null ? fmtHour(selectedHour) : "Select a slot"}</strong></div>
+                    <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
+                    <div className="summary-item"><span>Price</span><strong>{fmt(arena.pricePerHour)}</strong></div>
+                    <div className="summary-item"><span>Tax (18%)</span><strong>{fmt(tax)}</strong></div>
+                    <div className="summary-item total"><span>Total</span><strong style={{ color: cfg.color }}>{fmt(total)}</strong></div>
+                  </div>
+                  <button 
+                    disabled={selectedHour === null || status === "BOOKING"}
+                    onClick={hold}
+                    className="btn-pay-now"
+                    style={{ background: selectedHour === null ? "var(--surface-2)" : cfg.color, color: selectedHour === null ? "var(--muted)" : "#000" }}
+                  >
+                    {status === "BOOKING" ? "Processing..." : (user ? "Pay & Confirm" : "Sign In to Book")}
+                  </button>
+                </>
+              ) : status === "PAYMENT" ? (
+                <div style={{ textAlign: "center" }}>
+                   <div className="countdown-ring">{mm}:{ss}</div>
+                   <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginTop: 16 }}>Complete Payment</h3>
+                   <p style={{ fontSize: 13, color: "var(--muted)", margin: "12px 0 24px" }}>Please confirm the payment of {fmt(total)} before the timer expires.</p>
+                   <div style={{ display: "flex", gap: 10 }}>
+                     <button onClick={() => pay(true)} className="btn-ok">Confirm</button>
+                     <button onClick={() => pay(false)} className="btn-err" style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444" }}>Cancel</button>
+                   </div>
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                  <div className="loader" style={{ margin: "0 auto 16px" }} />
+                  <p>Securing your slot...</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
 
       <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
+        .book-layout-container {
+          display: flex; gap: 24px; max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px;
         }
-        @keyframes pulse {
-          0% { opacity: 0.3; }
-          50% { opacity: 0.6; }
-          100% { opacity: 0.3; }
+        .book-main-col { flex: 1; min-width: 0; }
+        .book-side-col { width: 340px; flex-shrink: 0; }
+        .sticky-card { position: sticky; top: 88px; }
+        
+        .tab-btn {
+          flex: 1; padding: 10px; border-radius: 10px; border: none; background: transparent;
+          color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
         }
-        .loader {
-          width: 40px;
-          height: 40px;
-          border: 3px solid rgba(255,255,255,0.1);
-          border-top-color: #fff;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
+        .tab-btn:hover { color: #fff; }
+        .tab-btn.active { background: var(--surface); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+
+        .slot-grid-optimized { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+        .slot-btn-premium {
+          display: flex; flex-direction: column; align-items: center; padding: 12px;
+          background: rgba(255,255,255,0.03); border-radius: 12px; cursor: pointer; transition: all 0.2s;
         }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
+        .slot-btn-premium:hover:not(.disabled) { background: rgba(255,255,255,0.08); transform: translateY(-2px); }
+        .slot-btn-premium.active { background: #fff !important; color: #000 !important; }
+        .slot-btn-premium.disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .summary-list { display: flex; flex-direction: column; gap: 10px; }
+        .summary-item { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); }
+        .summary-item strong { color: #fff; }
+        .summary-item.total { font-size: 18px; font-weight: 900; margin-top: 8px; }
+
+        .btn-pay-now {
+          width: 100%; margin-top: 24px; padding: 16px; border-radius: 12px; border: none;
+          font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.3s;
         }
+        .btn-pay-now:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
+
+        .countdown-ring {
+          width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--accent);
+          display: flex; align-items: center; justify-content: center; margin: 0 auto;
+          font-size: 20px; font-weight: 800; font-family: monospace;
+        }
+
+        .slots-placeholder { padding: 40px; text-align: center; color: var(--muted); font-size: 14px; }
+
+        @media (max-width: 960px) {
+          .book-layout-container { flex-direction: column; }
+          .book-side-col { width: 100%; }
+          .sticky-card { position: fixed; bottom: 0; left: 0; right: 0; top: auto; z-index: 1000; border-radius: 20px 20px 0 0; border-top: 1px solid var(--border); box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
+          .summary-list { display: none; }
+          .btn-pay-now { margin-top: 0; }
+          .book-main-col { padding-bottom: 120px; }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .loader { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
