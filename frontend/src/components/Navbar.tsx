@@ -12,7 +12,7 @@ export default function Navbar() {
   const [locStatus, setLocStatus] = useState<"idle"|"loading"|"granted"|"denied">("idle");
 
   useEffect(() => {
-    const saved = sessionStorage.getItem("dkplay_city");
+    const saved = sessionStorage.getItem("letsplay_city");
     if (saved) { setCity(saved); setLocStatus("granted"); return; }
     if (!navigator.geolocation) { setLocStatus("denied"); return; }
     setLocStatus("loading");
@@ -26,7 +26,7 @@ export default function Navbar() {
           );
           const d = await r.json();
           const detected = d.address?.city || d.address?.town || d.address?.county || "India";
-          sessionStorage.setItem("dkplay_city", detected);
+          sessionStorage.setItem("letsplay_city", detected);
           setCity(detected);
           setLocStatus("granted");
         } catch { setLocStatus("denied"); }
@@ -45,17 +45,17 @@ export default function Navbar() {
       {/* Left: Logo */}
       <Link href="/" className="brand-link" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
         <div style={{
-          width: 32, height: 32, background: "var(--dk-blue)", color: "#fff",
+          width: 32, height: 32, background: "var(--lp-blue)", color: "#fff",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontWeight: 900, fontSize: 18, borderRadius: 4
         }}>
-          D
+          L
         </div>
         <div className="brand-text" style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
           <span style={{ fontSize: 16, fontWeight: 900, color: "#fff", letterSpacing: "1px", textTransform: "uppercase" }}>
-            DECATHLON
+            LET&apos;S
           </span>
-          <span style={{ fontSize: 11, color: "var(--dk-blue)", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>
+          <span style={{ fontSize: 11, color: "var(--lp-blue)", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>
             PLAY
           </span>
         </div>
@@ -77,7 +77,7 @@ export default function Navbar() {
           style={{ border: "1px solid var(--border)", cursor: locStatus === "denied" ? "default" : "pointer" }}
           onClick={() => {
             if (locStatus === "granted" || locStatus === "denied") {
-              sessionStorage.removeItem("dkplay_city");
+              sessionStorage.removeItem("letsplay_city");
               setLocStatus("idle");
               setCity("India");
               setTimeout(() => {
@@ -90,7 +90,7 @@ export default function Navbar() {
                       const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`, { headers: { "Accept-Language": "en" } });
                       const d = await r.json();
                       const detected = d.address?.city || d.address?.town || d.address?.county || "India";
-                      sessionStorage.setItem("dkplay_city", detected);
+                      sessionStorage.setItem("letsplay_city", detected);
                       setCity(detected); setLocStatus("granted");
                     } catch { setLocStatus("denied"); }
                   },

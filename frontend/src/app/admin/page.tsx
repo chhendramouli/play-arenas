@@ -169,7 +169,7 @@ export default function AdminPage() {
       {/* Navbar */}
       <nav className="navbar">
         <div className="admin-brand" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, background: "var(--dk-blue)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18, borderRadius: 4 }}>D</div>
+          <div style={{ width: 32, height: 32, background: "var(--lp-blue)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18, borderRadius: 4 }}>D</div>
           <span className="logo-text">Back Office</span>
           <span style={{ fontSize: 10, color: "var(--accent)", background: "rgba(0,180,216,.1)", border: "1px solid var(--accent)", borderRadius: 4, padding: "2px 8px", fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase" }}>ADMIN</span>
         </div>
@@ -346,7 +346,7 @@ export default function AdminPage() {
                 <div className="admin-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   {[
                     { label: "Name *", key: "name", placeholder: "e.g. Koramangala Football Turf" },
-                    { label: "Location *", key: "location", placeholder: "e.g. Decathlon, Koramangala, Bangalore" },
+                    { label: "Location *", key: "location", placeholder: "e.g. Let's Play, Koramangala, Bangalore" },
                     { label: "Price per Hour (₹) *", key: "pricePerHour", placeholder: "e.g. 800", type: "number" },
                     { label: "Image URL", key: "imageUrl", placeholder: "https://images.unsplash.com/..." },
                   ].map(f => (

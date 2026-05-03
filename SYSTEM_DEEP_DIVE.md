@@ -1,6 +1,6 @@
-# Decathlon Play - Granular System Deep Dive
+# Let's Play - Granular System Deep Dive
 
-This document provides low-level technical specifications, implementation details, and operational patterns for the Decathlon Play platform.
+This document provides low-level technical specifications, implementation details, and operational patterns for the Let's Play platform.
 
 ---
 
@@ -40,7 +40,7 @@ This document provides low-level technical specifications, implementation detail
 
 ## ⚙️ 2. Temporal Workflow Architecture
 
-**Namespace**: `DKT-PLAY`
+**Namespace**: `LETS-PLAY`
 **Task Queue**: `booking-queue`
 
 ### BookingWorkflow Implementation:
@@ -53,7 +53,7 @@ This document provides low-level technical specifications, implementation detail
     *   `Timer Expires` -> Update DB to `FAILED` -> Release slot.
 
 ### Namespace Config (TemporalConfig.java):
-*   Uses `WorkflowClientOptions.newBuilder().setNamespace("DKT-PLAY").build()`.
+*   Uses `WorkflowClientOptions.newBuilder().setNamespace("LETS-PLAY").build()`.
 *   Retention period is globally set to **30 days** via CLI.
 
 ---
@@ -86,7 +86,7 @@ This document provides low-level technical specifications, implementation detail
 *   `.premium-glass`: `backdrop-filter: blur(20px)` + semi-transparent border.
 *   `.premium-tab`: Custom switch-style tab system.
 *   `.slot-btn-premium`: High-fidelity interaction states (hover, active, disabled).
-*   **Theme**: Dark-first, using Decathlon Blue (`#007bc4`) for primary actions.
+*   **Theme**: Dark-first, using Let's Play Blue (`#007bc4`) for primary actions.
 
 ---
 
@@ -106,7 +106,7 @@ This document provides low-level technical specifications, implementation detail
 ---
 
 ## 📜 6. Important Files for Reference
-*   `backend/src/main/java/com/decathlon/play_arenas_backend/config/TemporalConfig.java`: Central multi-tenancy config.
+*   `backend/src/main/java/com.letsplay.arenas_backend/config/TemporalConfig.java`: Central multi-tenancy config.
 *   `frontend/src/app/book/page.tsx`: Core booking logic and premium UI.
 *   `DEPLOY_STATUS.md`: Current live environment facts.
 
@@ -120,7 +120,7 @@ This document provides low-level technical specifications, implementation detail
 
 | Role | Email | Password |
 | :--- | :--- | :--- |
-| **Admin** | `superadmin@decathlon.com` | `admin123` |
+| **Admin** | `superadmin@letsplay.com` | `admin123` |
 | **Customer** | (Register via UI) | (User defined) |
 
 > [!IMPORTANT]

@@ -33,7 +33,7 @@ export default function LoginPage() {
             Welcome back
           </h1>
           <p style={{ color: "var(--muted)", fontSize: 14 }}>
-            Sign in to your <span style={{ color: "var(--accent)", fontWeight: 700 }}>Decathlon Play</span> account
+            Sign in to your <span style={{ color: "var(--accent)", fontWeight: 700 }}>Let's Play</span> account
           </p>
         </div>
 

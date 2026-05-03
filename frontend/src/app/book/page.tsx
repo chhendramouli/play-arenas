@@ -18,7 +18,7 @@ const SC: Record<string, { icon: string; bg: string; color: string }> = {
   Default:    { icon: "🏟️", bg: "rgba(168,85,247,0.1)",  color: "#a855f7" },
 };
 
-// Decathlon Blue
+// Let's Play Blue
 const DKT_BLUE = "#007bc4";
 
 type Status = "IDLE" | "BOOKING" | "PAYMENT" | "SUCCESS" | "FAILED";

@@ -1,17 +1,17 @@
-# Decathlon Play - Granular File Map
+# Let's Play - Granular File Map
 
 This document maps the project's critical files to their specific functions, enabling rapid navigation for AI agents.
 
 ## 📂 Backend (Spring Boot)
 | Path | Responsibility |
 | :--- | :--- |
-| `src/main/java/com/decathlon/play_arenas_backend/model/` | **Entity Definitions**: `User`, `Arena`, `Booking`. |
-| `src/main/java/com/decathlon/play_arenas_backend/repository/` | **JPA Data Access**: Interfaces for DB queries. |
-| `src/main/java/com/decathlon/play_arenas_backend/service/` | **Business Logic**: `BookingService` (Triggers Temporal workflows). |
-| `src/main/java/com/decathlon/play_arenas_backend/controller/` | **API Layer**: Auth, Arena, and Booking REST endpoints. |
-| `src/main/java/com/decathlon/play_arenas_backend/config/TemporalConfig.java` | **Workflow Client**: Configures `DKT-PLAY` namespace. |
-| `src/main/java/com/decathlon/play_arenas_backend/config/DataInitializer.java` | **Seeding**: Populates initial venues (Bandra, Powai, etc.). |
-| `src/main/java/com/decathlon/play_arenas_backend/workflow/` | **Temporal Workflows**: The state machine for booking holds. |
+| `src/main/java/com.letsplay.arenas_backend/model/` | **Entity Definitions**: `User`, `Arena`, `Booking`. |
+| `src/main/java/com.letsplay.arenas_backend/repository/` | **JPA Data Access**: Interfaces for DB queries. |
+| `src/main/java/com.letsplay.arenas_backend/service/` | **Business Logic**: `BookingService` (Triggers Temporal workflows). |
+| `src/main/java/com.letsplay.arenas_backend/controller/` | **API Layer**: Auth, Arena, and Booking REST endpoints. |
+| `src/main/java/com.letsplay.arenas_backend/config/TemporalConfig.java` | **Workflow Client**: Configures `LETS-PLAY` namespace. |
+| `src/main/java/com.letsplay.arenas_backend/config/DataInitializer.java` | **Seeding**: Populates initial venues (Bandra, Powai, etc.). |
+| `src/main/java/com.letsplay.arenas_backend/workflow/` | **Temporal Workflows**: The state machine for booking holds. |
 
 ## 📂 Frontend (Next.js)
 | Path | Responsibility |

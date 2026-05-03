@@ -3,13 +3,13 @@ services:
     image: postgres:16-alpine
     container_name: play-arenas-postgres
     environment:
-      POSTGRES_USER: ${DB_USER:-decathlon}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-decathlon}
+      POSTGRES_USER: ${DB_USER:-letsplay}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-letsplay}
       POSTGRES_DB: temporal
     ports: ['5432:5432']
     volumes: ['pgdata:/var/lib/postgresql/data']
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U decathlon"]
+      test: ["CMD-SHELL", "pg_isready -U letsplay"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,8 +20,8 @@ services:
     environment:
       - DB=postgres12
       - DB_PORT=5432
-      - POSTGRES_USER=${DB_USER:-decathlon}
-      - POSTGRES_PWD=${DB_PASSWORD:-decathlon}
+      - POSTGRES_USER=${DB_USER:-letsplay}
+      - POSTGRES_PWD=${DB_PASSWORD:-letsplay}
       - POSTGRES_SEEDS=postgres
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
     ports: ['7233:7233']

@@ -8,11 +8,11 @@
 		<version>3.4.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.decathlon</groupId>
+	<groupId>com.letsplay</groupId>
 	<artifactId>play-arenas-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>play-arenas-backend</name>
-	<description>Decathlon Play Arenas Backend</description>
+	<description>Let's Play Arenas Backend</description>
 	<properties>
 		<java.version>17</java.version>
 		<temporal.version>1.24.0</temporal.version>

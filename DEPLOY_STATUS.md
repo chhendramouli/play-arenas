@@ -82,8 +82,8 @@ Lives at `/opt/play-arenas/deploy/.env` on the box (chmod 600). Contains:
 - `TEMPORAL_UI_USER` = `admin`
 - `TEMPORAL_UI_HASH` = bcrypt hash (with `$` escaped to `$$` for compose interpolation)
 - `APP_CORS_ALLOWED_ORIGINS` = `http://localhost:3000,https://13-235-29-120.nip.io,https://main.d39vj530k6o7zp.amplifyapp.com`
-- `POSTGRES_USER`/`POSTGRES_PASSWORD` = `decathlon` / `decathlon`
-- DB name = `decathlon_play`
+- `POSTGRES_USER`/`POSTGRES_PASSWORD` = `letsplay` / `letsplay`
+- DB name = `letsplay_db`
 
 The plaintext temporal-UI password is stored locally in `/tmp/play-arenas-facts.env`
 under `TEMPORAL_UI_PASS`.
@@ -115,11 +115,11 @@ to a static `/book?id=` route to make `output: 'export'` work without
 ## Application admin login
 
 - URL: `https://main.d39vj530k6o7zp.amplifyapp.com/login` (after frontend deploys)
-- Email: `superadmin@dkplay.com`
+- Email: `superadmin@letsplay.com`
 - Password: `admin123`
 
 (Yes, this is a known-weak demo credential. Rotate by editing
-`backend/src/main/java/com/decathlon/play_arenas_backend/config/DataInitializer.java`
+`backend/src/main/java/com.letsplay.arenas_backend/config/DataInitializer.java`
 and re-deploying.)
 
 ## Cost guardrails

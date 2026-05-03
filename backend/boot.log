@@ -1,6 +1,6 @@
 [INFO] Scanning for projects...
 [INFO] 
-[INFO] -----------------< com.decathlon:play-arenas-backend >------------------
+[INFO] -----------------< com.letsplay:play-arenas-backend >------------------
 [INFO] Building play-arenas-backend 0.0.1-SNAPSHOT
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
@@ -96,7 +96,7 @@ org.springframework.beans.factory.BeanCreationException: Error creating bean wit
 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318) ~[spring-boot-3.4.1.jar:3.4.1]
 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1361) ~[spring-boot-3.4.1.jar:3.4.1]
 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1350) ~[spring-boot-3.4.1.jar:3.4.1]
-	at com.decathlon.play_arenas_backend.PlayArenasBackendApplication.main(PlayArenasBackendApplication.java:10) ~[classes/:na]
+	at com.letsplay.arenas_backend.PlayArenasBackendApplication.main(PlayArenasBackendApplication.java:10) ~[classes/:na]
 Caused by: io.grpc.StatusRuntimeException: UNAVAILABLE: io exception
 	at io.grpc.stub.ClientCalls.toStatusRuntimeException(ClientCalls.java:271) ~[grpc-stub-1.54.1.jar:1.54.1]
 	at io.grpc.stub.ClientCalls.getUnchecked(ClientCalls.java:252) ~[grpc-stub-1.54.1.jar:1.54.1]
@@ -118,7 +118,7 @@ Caused by: io.grpc.StatusRuntimeException: UNAVAILABLE: io exception
 	at io.temporal.internal.WorkflowThreadMarker.lambda$protectFromWorkflowThread$1(WorkflowThreadMarker.java:83) ~[temporal-serviceclient-1.24.0.jar:na]
 	at jdk.proxy2/jdk.proxy2.$Proxy125.connect(Unknown Source) ~[na:na]
 	at io.temporal.worker.WorkerFactory.start(WorkerFactory.java:213) ~[temporal-sdk-1.24.0.jar:na]
-	at com.decathlon.play_arenas_backend.workflow.TemporalWorker.startWorker(TemporalWorker.java:27) ~[classes/:na]
+	at com.letsplay.arenas_backend.workflow.TemporalWorker.startWorker(TemporalWorker.java:27) ~[classes/:na]
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]

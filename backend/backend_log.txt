@@ -1,6 +1,6 @@
 [INFO] Scanning for projects...
 [INFO] 
-[INFO] -----------------< com.decathlon:play-arenas-backend >------------------
+[INFO] -----------------< com.letsplay:play-arenas-backend >------------------
 [INFO] Building play-arenas-backend 0.0.1-SNAPSHOT
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------

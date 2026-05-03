@@ -111,7 +111,7 @@ export default function Home() {
             </div>
             <h1 className="section-heading" style={{ fontSize: "clamp(40px, 6vw, 72px)" }}>
               BOOK YOUR<br />
-              <span style={{ color: "var(--dk-blue)" }}>GAME</span><br />
+              <span style={{ color: "var(--lp-blue)" }}>GAME</span><br />
               TODAY
             </h1>
             <p style={{ fontSize: 16, color: "var(--muted)", maxWidth: 450, marginBottom: 32, lineHeight: 1.6 }}>

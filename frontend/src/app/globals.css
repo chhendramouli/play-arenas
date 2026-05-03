@@ -11,9 +11,9 @@
   --accent: #00b4d8;
   --accent-hover: #0ea5e9;
   --amber: #f59e0b;
-  --dk-blue: #3643ba;
-  --dk-blue-dark: #2b35a0;
-  --dk-blue-light: #4456d4;
+  --lp-blue: #3643ba;
+  --lp-blue-dark: #2b35a0;
+  --lp-blue-light: #4456d4;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -80,12 +80,12 @@ img, svg, video, canvas {
 }
 
 .btn-primary {
-  background: var(--dk-blue); color: #fff; font-weight: 700;
+  background: var(--lp-blue); color: #fff; font-weight: 700;
   border-radius: 6px; padding: 12px 24px; font-size: 14px;
   transition: all 0.3s ease;
 }
 .btn-primary:hover { 
-  background: var(--dk-blue-light); 
+  background: var(--lp-blue-light); 
   box-shadow: 0 4px 14px rgba(54, 67, 186, 0.4);
   transform: translateY(-1px);
 }

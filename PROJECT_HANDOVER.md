@@ -1,6 +1,6 @@
-# Decathlon Play - Project Handover & Full History Summary
+# Let's Play - Project Handover & Full History Summary
 
-This document provides a comprehensive technical overview and history of the **Decathlon Play** booking platform development for transition to other AI agents or developers.
+This document provides a comprehensive technical overview and history of the **Let's Play** booking platform development for transition to other AI agents or developers.
 
 ## 🏗️ System Architecture
 A production-grade full-stack application for managing sports arena bookings with real-time slot orchestration.
@@ -34,7 +34,7 @@ A production-grade full-stack application for managing sports arena bookings wit
     *   It starts a **2-minute timer**.
     *   If payment isn't received, it automatically releases the slot.
     *   If payment is successful, it transitions to `CONFIRMED`.
-*   **Multi-tenancy**: Migrated workflows to a dedicated `DKT-PLAY` namespace for production isolation.
+*   **Multi-tenancy**: Migrated workflows to a dedicated `LETS-PLAY` namespace for production isolation.
 *   **Retention**: Set a **30-day retention policy** for all namespaces to ensure long-term visibility of booking logs.
 
 ### 4. Frontend UI/UX (Premium Redesign)

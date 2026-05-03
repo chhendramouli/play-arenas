@@ -8,8 +8,8 @@ import Navbar from "@/components/Navbar";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Decathlon Play | Book Sports Arenas",
-  description: "Book premium sports arenas at Decathlon venues. Football, Basketball, Badminton, Tennis, Cricket and more.",
+  title: "Let's Play | Book Sports Arenas",
+  description: "Book premium sports arenas at Let's Play venues. Football, Basketball, Badminton, Tennis, Cricket and more.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -25,13 +25,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Rehydrate from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("dkplay_token");
+    const saved = localStorage.getItem("letsplay_token");
     if (saved) {
       setToken(saved);
       fetch(`${API}/api/auth/me`, { headers: { Authorization: `Bearer ${saved}` } })
         .then(r => r.ok ? r.json() : null)
-        .then(u => { if (u) setUser(u as AuthUser); else localStorage.removeItem("dkplay_token"); })
-        .catch(() => localStorage.removeItem("dkplay_token"))
+        .then(u => { if (u) setUser(u as AuthUser); else localStorage.removeItem("letsplay_token"); })
+        .catch(() => localStorage.removeItem("letsplay_token"))
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const persist = (tok: string, u: AuthUser) => {
-    localStorage.setItem("dkplay_token", tok);
+    localStorage.setItem("letsplay_token", tok);
     setToken(tok);
     setUser(u);
   };
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("dkplay_token");
+    localStorage.removeItem("letsplay_token");
     setToken(null);
     setUser(null);
     queryClient.clear();
