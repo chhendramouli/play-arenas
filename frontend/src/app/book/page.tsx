@@ -70,7 +70,13 @@ function BookPage() {
   
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
-  const [activeTab,    setActiveTab]    = useState<"morning" | "afternoon" | "evening">("morning");
+  const getDefaultTab = (): "morning" | "afternoon" | "evening" => {
+    const h = new Date().getHours();
+    if (h < 12) return "morning";
+    if (h < 17) return "afternoon";
+    return "evening";
+  };
+  const [activeTab,    setActiveTab]    = useState<"morning" | "afternoon" | "evening">(getDefaultTab());
   const [bookedHours,  setBookedHours]  = useState<number[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
 
@@ -368,17 +374,30 @@ function BookPage() {
                 </>
               ) : (
                 <div style={{ textAlign: "center", padding: "10px 0" }}>
-                   <div className="countdown-ring" style={{ borderColor: DKT_BLUE, color: DKT_BLUE, width: 100, height: 100, fontSize: 28 }}>
-                     {mm}:{ss}
-                   </div>
-                   <h3 className="glow-text" style={{ fontSize: 20, fontWeight: 900, color: "#fff", marginTop: 20 }}>Complete Payment</h3>
-                   <p style={{ fontSize: 13, color: "var(--muted)", margin: "16px 0 32px", lineHeight: 1.5 }}>
-                     Your slot is held. Finalize the transaction to secure your spot!
-                   </p>
-                   <div style={{ display: "flex", gap: 12 }}>
-                     <button onClick={() => pay(true)} className="btn-ok" style={{ flex: 1.5, padding: 16, borderRadius: 12, background: DKT_BLUE }}>Pay Now</button>
-                     <button onClick={() => pay(false)} style={{ flex: 1, padding: 16, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "var(--muted)", borderRadius: 12, cursor: "pointer", fontSize: 14, fontWeight: 600 }}>Cancel</button>
-                   </div>
+                  <div className="countdown-ring" style={{ borderColor: countdown <= 30 ? "#f87171" : DKT_BLUE, color: countdown <= 30 ? "#f87171" : DKT_BLUE, width: 96, height: 96, fontSize: 26 }}>
+                    {mm}:{ss}
+                  </div>
+                  <h3 style={{ fontSize: 18, fontWeight: 900, color: "#fff", marginTop: 16, marginBottom: 4 }}>Slot Reserved!</h3>
+                  <p style={{ fontSize: 12, color: "var(--muted)", margin: "0 0 20px", lineHeight: 1.5 }}>
+                    Complete payment before the timer runs out.
+                  </p>
+                  <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "8px 12px", marginBottom: 16, fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".06em" }}>
+                    🧪 Payment Simulation
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <button
+                      onClick={() => pay(true)}
+                      style={{ width: "100%", padding: "14px 16px", borderRadius: 12, background: "#16a34a", color: "#fff", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 800, letterSpacing: ".02em" }}
+                    >
+                      ✓ Simulate Payment Success
+                    </button>
+                    <button
+                      onClick={() => pay(false)}
+                      style={{ width: "100%", padding: "12px 16px", borderRadius: 12, background: "rgba(239,68,68,0.12)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)", cursor: "pointer", fontSize: 13, fontWeight: 700 }}
+                    >
+                      ✕ Simulate Payment Failure
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
