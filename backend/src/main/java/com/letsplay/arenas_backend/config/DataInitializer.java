@@ -42,7 +42,7 @@ public class DataInitializer implements CommandLineRunner {
             com.letsplay.arenas_backend.model.User admin = new com.letsplay.arenas_backend.model.User();
             admin.setName("Super Admin");
             admin.setEmail("superadmin@letsplay.com");
-            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setPasswordHash(passwordEncoder.encode("admin123"));
             admin.setRole(com.letsplay.arenas_backend.model.UserRole.ADMIN);
             userRepository.save(admin);
             System.out.println("Seeded default admin: superadmin@letsplay.com / admin123");
