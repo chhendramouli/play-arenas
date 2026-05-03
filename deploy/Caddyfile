@@ -24,7 +24,7 @@
     }
 
     # Temporal UI behind basic auth
-    handle_path /temporal-ui/* {
+    handle /temporal-ui/* {
         basicauth {
             {$TEMPORAL_UI_USER} {$TEMPORAL_UI_HASH}
         }
