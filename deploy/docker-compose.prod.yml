@@ -27,7 +27,7 @@ services:
       - -c
       - maintenance_work_mem=32MB
       - -c
-      - max_connections=40
+      - max_connections=100
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
