@@ -307,7 +307,7 @@ tbody tr:hover td { background:rgba(255,255,255,.03); }
 }
 
 @media (max-width: 1000px) {
-  .book-layout-grid { grid-template-columns: 1fr; padding-bottom: 340px; }
+  .book-layout-grid { grid-template-columns: 1fr; padding-bottom: 340px !important; }
   .sticky-sidebar { position: fixed !important; bottom: 0; left: 0; right: 0; z-index: 1000; border-radius: 24px 24px 0 0 !important; border-top: 1px solid rgba(255,255,255,0.1) !important; box-shadow: 0 -10px 40px rgba(0,0,0,0.6) !important; max-height: 320px; overflow-y: auto; }
 }
 
