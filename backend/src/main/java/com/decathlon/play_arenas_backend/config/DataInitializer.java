@@ -37,7 +37,7 @@ public class DataInitializer implements CommandLineRunner {
             arena("Andheri Football Turf",      "Decathlon, Andheri West, Mumbai",    "Football",   800,  "https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=800&q=80"),
             arena("Powai Basketball Arena",     "Decathlon, Powai, Mumbai",           "Basketball", 700,  "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80"),
             arena("Thane Badminton Complex",    "Decathlon, Thane, Mumbai",           "Badminton",  500,  "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80"),
-            arena("Bandra Tennis Club",         "Decathlon, Bandra, Mumbai",          "Tennis",     600,  "https://images.unsplash.com/photo-1622279457486-62dbd5f9f1b2?w=800&q=80"),
+            arena("Bandra Tennis Club",         "Decathlon, Bandra, Mumbai",          "Tennis",     600,  "https://images.unsplash.com/photo-1542144582-1ba00456b5e3?w=800&q=80"),
             arena("Navi Mumbai Cricket Ground", "Decathlon, Navi Mumbai",             "Cricket",    1200, "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&q=80"),
             arena("Goregaon Aquatics Centre",   "Decathlon, Goregaon, Mumbai",        "Swimming",   400,  "https://images.unsplash.com/photo-1600965962361-9035dbfd1c50?w=800&q=80"),
 

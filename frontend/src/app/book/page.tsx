@@ -4,6 +4,7 @@ import { Arena } from "@/components/types";
 import { useAuth } from "@/components/AuthContext";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8090";
 const SC: Record<string, { icon: string; bg: string }> = {
@@ -18,9 +19,9 @@ const SC: Record<string, { icon: string; bg: string }> = {
 
 type Status = "IDLE" | "BOOKING" | "PAYMENT" | "SUCCESS" | "FAILED";
 
-const ALL_HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6 AM to 9 PM
+const ALL_HOURS = Array.from({ length: 19 }, (_, i) => i + 5); // 5 AM to 11 PM (23:00)
 
-const getDates = () => Array.from({ length: 14 }, (_, i) => {
+const getDates = () => Array.from({ length: 28 }, (_, i) => {
   const d = new Date(); d.setDate(d.getDate() + i); return d;
 });
 
@@ -53,6 +54,7 @@ function BookPage() {
   const { user, authFetch } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   // /book?id=<uuid>&date=<yyyy-mm-dd>  (route is no longer dynamic — easier to host statically)
   const arenaIdFromQuery = searchParams.get("id");
 
@@ -154,7 +156,10 @@ function BookPage() {
     try {
       await authFetch(`${API}/api/bookings/${bookingId}/payment?success=${ok}`, { method: "POST" });
       setStatus(ok ? "SUCCESS" : "FAILED");
-      if (ok) loadSlots(); // Refresh slots so the booked slot goes grey
+      if (ok) {
+        queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
+        loadSlots(); // Refresh slots so the booked slot goes grey
+      }
     } catch { setStatus("FAILED"); }
   };
 
