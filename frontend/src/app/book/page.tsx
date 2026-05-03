@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8090";
+
 const SC: Record<string, { icon: string; bg: string; color: string }> = {
   Football:   { icon: "⚽", bg: "rgba(16,185,129,0.1)", color: "#10b981" },
   Basketball: { icon: "🏀", bg: "rgba(245,158,11,0.1)",  color: "#f59e0b" },
@@ -19,10 +20,9 @@ const SC: Record<string, { icon: string; bg: string; color: string }> = {
 
 type Status = "IDLE" | "BOOKING" | "PAYMENT" | "SUCCESS" | "FAILED";
 
-// Grouping hours for tabs
-const MORNING_HOURS   = Array.from({ length: 7 }, (_, i) => i + 5);  // 5 AM - 11 AM
-const AFTERNOON_HOURS = Array.from({ length: 5 }, (_, i) => i + 12); // 12 PM - 4 PM
-const EVENING_HOURS   = Array.from({ length: 7 }, (_, i) => i + 17); // 5 PM - 11 PM
+const MORNING_HOURS   = [5, 6, 7, 8, 9, 10, 11];
+const AFTERNOON_HOURS = [12, 13, 14, 15, 16];
+const EVENING_HOURS   = [17, 18, 19, 20, 21, 22, 23];
 
 const getDates = () => Array.from({ length: 28 }, (_, i) => {
   const d = new Date(); d.setDate(d.getDate() + i); return d;
@@ -40,11 +40,7 @@ const fmtHour = (h: number) =>
 
 export default function BookPageWrapper() {
   return (
-    <Suspense fallback={
-      <div className="page-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 64px)" }}>
-        <div className="loader" />
-      </div>
-    }>
+    <Suspense fallback={<div className="page-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "80vh" }}>Loading...</div>}>
       <BookPage />
     </Suspense>
   );
@@ -68,28 +64,29 @@ function BookPage() {
   const queryDate = searchParams.get("date");
   const validDates = dates.map(fmtDate);
   const initialDate = queryDate && validDates.includes(queryDate) ? queryDate : fmtDate(dates[0]);
+  
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [activeTab,    setActiveTab]    = useState<"morning" | "afternoon" | "evening">("morning");
   const [bookedHours,  setBookedHours]  = useState<number[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
-  const [arenaId,      setArenaId]      = useState<string>(arenaIdFromQuery ?? "");
 
   useEffect(() => {
     if (!arenaIdFromQuery) { setArena("not-found"); return; }
-    setArenaId(arenaIdFromQuery);
     (async () => {
-      const r = await fetch(`${API}/api/arenas/${arenaIdFromQuery}`);
-      if (!r.ok) { setArena("not-found"); return; }
-      setArena(await r.json());
+      try {
+        const r = await fetch(`${API}/api/arenas/${arenaIdFromQuery}`);
+        if (!r.ok) { setArena("not-found"); return; }
+        setArena(await r.json());
+      } catch { setArena("not-found"); }
     })();
   }, [arenaIdFromQuery]);
 
   const loadSlots = useCallback(async () => {
-    if (!arenaId) return;
+    if (!arenaIdFromQuery) return;
     setSlotsLoading(true);
     try {
-      const r = await fetch(`${API}/api/arenas/${arenaId}/slots?date=${selectedDate}`);
+      const r = await fetch(`${API}/api/arenas/${arenaIdFromQuery}/slots?date=${selectedDate}`);
       const d = await r.json();
       const bh = d.bookedHours;
       setBookedHours(Array.isArray(bh) ? bh : Object.values(bh ?? {}));
@@ -99,7 +96,7 @@ function BookPage() {
       setSlotsLoading(false);
       setSelectedHour(null);
     }
-  }, [arenaId, selectedDate]);
+  }, [arenaIdFromQuery, selectedDate]);
 
   useEffect(() => { loadSlots(); }, [loadSlots]);
 
@@ -131,16 +128,13 @@ function BookPage() {
           endTime:   localEnd,
         }),
       });
-      if (!r.ok) { const e = await r.json(); throw new Error(e.error); }
+      if (!r.ok) throw new Error("Hold failed");
       const d = await r.json();
       setBookingId(d.id);
       setBookedDate(selectedDate);
       setBookedHour(selectedHour);
       setStatus("PAYMENT");
-    } catch (e: unknown) {
-      console.error(e);
-      setStatus("FAILED");
-    }
+    } catch { setStatus("FAILED"); }
   };
 
   const pay = async (ok: boolean) => {
@@ -154,16 +148,8 @@ function BookPage() {
     } catch { setStatus("FAILED"); }
   };
 
-  const resetBooking = () => {
-    setStatus("IDLE");
-    setBookingId(null);
-    setBookedDate(null);
-    setBookedHour(null);
-    loadSlots();
-  };
-
   if (arena === "not-found") return (
-    <div className="page-bg" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 64px)", gap: 16 }}>
+    <div className="page-bg" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "80vh", gap: 16 }}>
       <div style={{ fontSize: 64 }}>🏟️</div>
       <p style={{ fontWeight: 800, fontSize: 24, color: "#fff" }}>Arena not found</p>
       <Link href="/" className="btn-primary" style={{ padding: "12px 24px" }}>← Back to all arenas</Link>
@@ -171,7 +157,7 @@ function BookPage() {
   );
 
   if (!arena) return (
-    <div className="page-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 64px)" }}>
+    <div className="page-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "80vh" }}>
       <p style={{ color: "var(--muted)", fontWeight: 500 }}>Fetching arena details...</p>
     </div>
   );
@@ -191,35 +177,31 @@ function BookPage() {
   const currentHours = activeTab === "morning" ? MORNING_HOURS : activeTab === "afternoon" ? AFTERNOON_HOURS : EVENING_HOURS;
 
   return (
-    <div className="page-bg">
-      <div className="book-layout-container">
+    <div className="page-bg" style={{ paddingBottom: 100 }}>
+      <div style={{ display: "flex", gap: 24, maxWidth: 1100, margin: "0 auto", padding: "32px 24px", flexWrap: "wrap" }}>
         
-        {/* Left Column: Details & Slots */}
-        <div className="book-main-col">
+        {/* Main Content */}
+        <div style={{ flex: "1 1 600px", minWidth: 0 }}>
           
-          {/* Header Card */}
-          <div className="glass" style={{ padding: 28, marginBottom: 20, overflow: "hidden", position: "relative" }}>
-            <div style={{ position: "absolute", top: -20, right: -20, fontSize: 120, opacity: 0.05, pointerEvents: "none" }}>{cfg.icon}</div>
-            <div style={{ display: "flex", gap: 20, alignItems: "center", position: "relative" }}>
-              <div style={{ background: cfg.bg, width: 72, height: 72, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, border: `1px solid ${cfg.color}33` }}>
-                {cfg.icon}
-              </div>
-              <div style={{ flex: 1 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: cfg.color, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4, display: "block" }}>{arena.sportType} Venue</span>
-                <h1 style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 6 }}>{arena.name}</h1>
-                <p style={{ fontSize: 14, color: "var(--muted)", display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ color: cfg.color }}>📍</span> {arena.location}
-                </p>
-              </div>
-            </div>
+          <div className="glass" style={{ padding: 28, marginBottom: 20, position: "relative", overflow: "hidden" }}>
+             <div style={{ position: "absolute", top: -20, right: -20, fontSize: 120, opacity: 0.05, pointerEvents: "none" }}>{cfg.icon}</div>
+             <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+                <div style={{ background: cfg.bg, width: 72, height: 72, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, border: `1px solid ${cfg.color}33` }}>
+                  {cfg.icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: cfg.color, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4, display: "block" }}>{arena.sportType} Venue</span>
+                  <h1 style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 6 }}>{arena.name}</h1>
+                  <p style={{ fontSize: 14, color: "var(--muted)" }}>📍 {arena.location}</p>
+                </div>
+             </div>
           </div>
 
           {(status === "IDLE" || status === "BOOKING") && (
             <>
-              {/* Date Selector */}
               <div className="glass" style={{ padding: 24, marginBottom: 20 }}>
                 <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 16 }}>Select Date</h2>
-                <div className="date-strip">
+                <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 8 }}>
                   {dates.map((d) => {
                     const iso = fmtDate(d);
                     const isSelected = iso === selectedDate;
@@ -227,33 +209,39 @@ function BookPage() {
                       <button
                         key={iso}
                         onClick={() => setSelectedDate(iso)}
-                        className={`date-chip ${isSelected ? "date-chip-active" : ""}`}
-                        style={{ background: isSelected ? cfg.color : "var(--surface)", border: isSelected ? `1px solid ${cfg.color}` : "1px solid var(--border)" }}
+                        style={{
+                          display: "flex", flexDirection: "column", alignItems: "center", minWidth: 64, padding: "12px 8px", borderRadius: 12, border: isSelected ? `2px solid ${cfg.color}` : "1px solid var(--border)",
+                          background: isSelected ? cfg.bg : "var(--surface)", color: isSelected ? cfg.color : "var(--muted)", cursor: "pointer", transition: "all 0.2s"
+                        }}
                       >
-                        <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", opacity: isSelected ? 1 : 0.6 }}>{d.toLocaleDateString("en-IN", { weekday: "short" })}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700 }}>{d.toLocaleDateString("en-IN", { weekday: "short" })}</span>
                         <span style={{ fontSize: 18, fontWeight: 800 }}>{d.getDate()}</span>
-                        <span style={{ fontSize: 10, opacity: isSelected ? 1 : 0.6 }}>{d.toLocaleDateString("en-IN", { month: "short" })}</span>
+                        <span style={{ fontSize: 10 }}>{d.toLocaleDateString("en-IN", { month: "short" })}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Time Tabbed Selector */}
               <div className="glass" style={{ padding: 24, marginBottom: 20 }}>
                 <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 16 }}>Select Time Slot</h2>
-                
-                {/* Tabs */}
                 <div style={{ display: "flex", gap: 8, background: "rgba(255,255,255,0.03)", padding: 4, borderRadius: 12, marginBottom: 20 }}>
-                  <button onClick={() => setActiveTab("morning")} className={`tab-btn ${activeTab === "morning" ? "active" : ""}`}>🌅 Morning</button>
-                  <button onClick={() => setActiveTab("afternoon")} className={`tab-btn ${activeTab === "afternoon" ? "active" : ""}`}>☀️ Afternoon</button>
-                  <button onClick={() => setActiveTab("evening")} className={`tab-btn ${activeTab === "evening" ? "active" : ""}`}>🌙 Evening</button>
+                  {(["morning", "afternoon", "evening"] as const).map(t => (
+                    <button
+                      key={t}
+                      onClick={() => setActiveTab(t)}
+                      style={{
+                        flex: 1, padding: "10px", borderRadius: 10, border: "none", background: activeTab === t ? "var(--surface)" : "transparent",
+                        color: activeTab === t ? "#fff" : "var(--muted)", fontSize: 13, fontWeight: 600, cursor: "pointer"
+                      }}
+                    >
+                      {t === "morning" ? "🌅 Morning" : t === "afternoon" ? "☀️ Afternoon" : "🌙 Evening"}
+                    </button>
+                  ))}
                 </div>
 
-                {slotsLoading ? (
-                  <div className="slots-placeholder">Loading availability...</div>
-                ) : (
-                  <div className="slot-grid-optimized">
+                {slotsLoading ? <p style={{ textAlign: "center", color: "var(--muted)" }}>Loading slots...</p> : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 12 }}>
                     {currentHours.map((h) => {
                       const isBooked = bookedHours.includes(h);
                       const isPast   = isPastHour(h);
@@ -264,11 +252,15 @@ function BookPage() {
                           key={h}
                           disabled={isDisabled}
                           onClick={() => setSelectedHour(isSelected ? null : h)}
-                          className={`slot-btn-premium ${isSelected ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
-                          style={{ border: isSelected ? `2px solid ${cfg.color}` : "1px solid var(--border)" }}
+                          style={{
+                            display: "flex", flexDirection: "column", alignItems: "center", padding: 12, borderRadius: 12, cursor: isDisabled ? "not-allowed" : "pointer",
+                            background: isSelected ? cfg.color : (isDisabled ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.05)"),
+                            color: isSelected ? "#000" : (isDisabled ? "rgba(255,255,255,0.15)" : "#fff"),
+                            border: isSelected ? `2px solid ${cfg.color}` : "1px solid var(--border)", transition: "all 0.2s"
+                          }}
                         >
                           <span style={{ fontSize: 14, fontWeight: 700 }}>{fmtHour(h)}</span>
-                          <span style={{ fontSize: 10, opacity: 0.6 }}>{isBooked ? "Not Available" : isPast ? "Elapsed" : "Available"}</span>
+                          <span style={{ fontSize: 9, opacity: 0.6 }}>{isBooked ? "Booked" : isPast ? "Elapsed" : "Available"}</span>
                         </button>
                       );
                     })}
@@ -278,69 +270,83 @@ function BookPage() {
             </>
           )}
 
-          {/* Success / Failure Views (Non-tabbed) */}
           {(status === "SUCCESS" || status === "FAILED") && (
             <div className="glass" style={{ padding: 40, textAlign: "center" }}>
                {status === "SUCCESS" ? (
-                 <div style={{ animation: "fadeIn 0.5s ease" }}>
+                 <div>
                     <div style={{ fontSize: 72, marginBottom: 20 }}>✅</div>
                     <h2 style={{ fontSize: 28, fontWeight: 900, color: "#fff", marginBottom: 12 }}>All Set!</h2>
-                    <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 32 }}>Your booking at {arena.name} is confirmed.</p>
-                    <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                      <Link href="/bookings" className="btn-primary" style={{ padding: "14px 28px", borderRadius: 12, background: "#fff", color: "#000" }}>Manage Bookings</Link>
-                      <Link href="/venues" className="btn-ghost" style={{ padding: "14px 28px", borderRadius: 12 }}>Browse More</Link>
+                    <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 32 }}>Your booking at {arena.name} is confirmed for {bookedDate} at {bookedHour !== null ? fmtHour(bookedHour) : ""}.</p>
+                    <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                      <Link href="/bookings" className="btn-primary" style={{ padding: "12px 24px" }}>Manage Bookings</Link>
+                      <Link href="/venues" className="btn-ghost" style={{ padding: "12px 24px" }}>Browse More</Link>
                     </div>
                  </div>
                ) : (
                  <div>
                     <div style={{ fontSize: 72, marginBottom: 20 }}>❌</div>
                     <h2 style={{ fontSize: 28, fontWeight: 900, color: "#fff", marginBottom: 12 }}>Booking Failed</h2>
-                    <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 32 }}>The session timed out or payment was declined.</p>
-                    <button onClick={resetBooking} className="btn-primary" style={{ padding: "14px 28px", borderRadius: 12, background: "#ef4444" }}>Try Again</button>
+                    <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 32 }}>We couldn't secure this slot. Please try another time.</p>
+                    <button onClick={() => setStatus("IDLE")} className="btn-primary" style={{ padding: "12px 24px" }}>Try Again</button>
                  </div>
                )}
             </div>
           )}
         </div>
 
-        {/* Right Column / Sticky Sidebar: Checkout */}
+        {/* Sidebar Summary */}
         {status !== "SUCCESS" && status !== "FAILED" && (
-          <div className="book-side-col">
-            <div className="glass sticky-card" style={{ padding: 24 }}>
-              {status === "IDLE" ? (
+          <div style={{ flex: "1 1 300px", minWidth: 300 }}>
+            <div className="glass" style={{ padding: 24, position: "sticky", top: 88 }}>
+              {status === "IDLE" || status === "BOOKING" ? (
                 <>
-                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 20 }}>Booking Summary</h3>
-                  <div className="summary-list">
-                    <div className="summary-item"><span>Date</span><strong>{selectedDate}</strong></div>
-                    <div className="summary-item"><span>Time</span><strong>{selectedHour !== null ? fmtHour(selectedHour) : "Select a slot"}</strong></div>
-                    <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
-                    <div className="summary-item"><span>Price</span><strong>{fmt(arena.pricePerHour)}</strong></div>
-                    <div className="summary-item"><span>Tax (18%)</span><strong>{fmt(tax)}</strong></div>
-                    <div className="summary-item total"><span>Total</span><strong style={{ color: cfg.color }}>{fmt(total)}</strong></div>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 20 }}>Summary</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+                       <span style={{ color: "var(--muted)" }}>Date</span>
+                       <span style={{ color: "#fff", fontWeight: 700 }}>{selectedDate}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+                       <span style={{ color: "var(--muted)" }}>Time</span>
+                       <span style={{ color: "#fff", fontWeight: 700 }}>{selectedHour !== null ? fmtHour(selectedHour) : "Select a slot"}</span>
+                    </div>
+                    <div style={{ height: 1, background: "var(--border)", margin: "8px 0" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+                       <span style={{ color: "var(--muted)" }}>Amount</span>
+                       <span style={{ color: "#fff", fontWeight: 700 }}>{fmt(arena.pricePerHour)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+                       <span style={{ color: "var(--muted)" }}>GST (18%)</span>
+                       <span style={{ color: "#fff", fontWeight: 700 }}>{fmt(tax)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 18, fontWeight: 900, color: cfg.color, marginTop: 8 }}>
+                       <span>Total</span>
+                       <span>{fmt(total)}</span>
+                    </div>
                   </div>
                   <button 
                     disabled={selectedHour === null || status === "BOOKING"}
                     onClick={hold}
-                    className="btn-pay-now"
-                    style={{ background: selectedHour === null ? "var(--surface-2)" : cfg.color, color: selectedHour === null ? "var(--muted)" : "#000" }}
+                    style={{
+                      width: "100%", marginTop: 24, padding: 16, borderRadius: 12, border: "none",
+                      background: selectedHour === null ? "var(--surface-2)" : cfg.color, color: selectedHour === null ? "var(--muted)" : "#000",
+                      fontSize: 16, fontWeight: 800, cursor: selectedHour === null ? "not-allowed" : "pointer"
+                    }}
                   >
-                    {status === "BOOKING" ? "Processing..." : (user ? "Pay & Confirm" : "Sign In to Book")}
+                    {status === "BOOKING" ? "Processing..." : (user ? "Confirm & Pay" : "Sign In to Book")}
                   </button>
                 </>
-              ) : status === "PAYMENT" ? (
-                <div style={{ textAlign: "center" }}>
-                   <div className="countdown-ring">{mm}:{ss}</div>
-                   <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginTop: 16 }}>Complete Payment</h3>
-                   <p style={{ fontSize: 13, color: "var(--muted)", margin: "12px 0 24px" }}>Please confirm the payment of {fmt(total)} before the timer expires.</p>
-                   <div style={{ display: "flex", gap: 10 }}>
-                     <button onClick={() => pay(true)} className="btn-ok">Confirm</button>
-                     <button onClick={() => pay(false)} className="btn-err" style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444" }}>Cancel</button>
-                   </div>
-                </div>
               ) : (
-                <div style={{ textAlign: "center", padding: "20px 0" }}>
-                  <div className="loader" style={{ margin: "0 auto 16px" }} />
-                  <p>Securing your slot...</p>
+                <div style={{ textAlign: "center" }}>
+                   <div style={{ width: 80, height: 80, borderRadius: "50%", border: `4px solid ${cfg.color}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 24, fontWeight: 900, fontFamily: "monospace", color: cfg.color }}>
+                     {mm}:{ss}
+                   </div>
+                   <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>Awaiting Payment</h3>
+                   <p style={{ fontSize: 13, color: "var(--muted)", margin: "12px 0 24px" }}>Please complete your payment before the timer expires.</p>
+                   <div style={{ display: "flex", gap: 10 }}>
+                     <button onClick={() => pay(true)} className="btn-ok" style={{ flex: 1, padding: 12 }}>Pay Now</button>
+                     <button onClick={() => pay(false)} style={{ flex: 1, padding: 12, background: "transparent", border: "1px solid #ef4444", color: "#ef4444", borderRadius: 8, cursor: "pointer" }}>Cancel</button>
+                   </div>
                 </div>
               )}
             </div>
@@ -348,63 +354,6 @@ function BookPage() {
         )}
 
       </div>
-
-      <style jsx>{`
-        .book-layout-container {
-          display: flex; gap: 24px; max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px;
-        }
-        .book-main-col { flex: 1; min-width: 0; }
-        .book-side-col { width: 340px; flex-shrink: 0; }
-        .sticky-card { position: sticky; top: 88px; }
-        
-        .tab-btn {
-          flex: 1; padding: 10px; border-radius: 10px; border: none; background: transparent;
-          color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-        }
-        .tab-btn:hover { color: #fff; }
-        .tab-btn.active { background: var(--surface); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-
-        .slot-grid-optimized { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-        .slot-btn-premium {
-          display: flex; flex-direction: column; align-items: center; padding: 12px;
-          background: rgba(255,255,255,0.03); border-radius: 12px; cursor: pointer; transition: all 0.2s;
-        }
-        .slot-btn-premium:hover:not(.disabled) { background: rgba(255,255,255,0.08); transform: translateY(-2px); }
-        .slot-btn-premium.active { background: #fff !important; color: #000 !important; }
-        .slot-btn-premium.disabled { opacity: 0.3; cursor: not-allowed; }
-
-        .summary-list { display: flex; flex-direction: column; gap: 10px; }
-        .summary-item { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); }
-        .summary-item strong { color: #fff; }
-        .summary-item.total { font-size: 18px; font-weight: 900; margin-top: 8px; }
-
-        .btn-pay-now {
-          width: 100%; margin-top: 24px; padding: 16px; border-radius: 12px; border: none;
-          font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.3s;
-        }
-        .btn-pay-now:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
-
-        .countdown-ring {
-          width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--accent);
-          display: flex; align-items: center; justify-content: center; margin: 0 auto;
-          font-size: 20px; font-weight: 800; font-family: monospace;
-        }
-
-        .slots-placeholder { padding: 40px; text-align: center; color: var(--muted); font-size: 14px; }
-
-        @media (max-width: 960px) {
-          .book-layout-container { flex-direction: column; }
-          .book-side-col { width: 100%; }
-          .sticky-card { position: fixed; bottom: 0; left: 0; right: 0; top: auto; z-index: 1000; border-radius: 20px 20px 0 0; border-top: 1px solid var(--border); box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
-          .summary-list { display: none; }
-          .btn-pay-now { margin-top: 0; }
-          .book-main-col { padding-bottom: 120px; }
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .loader { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   );
 }
