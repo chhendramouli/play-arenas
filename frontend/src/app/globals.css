@@ -287,16 +287,64 @@ tbody tr:hover td { background:rgba(255,255,255,.03); }
   background: rgba(239,68,68,.08) !important;
   border-color: rgba(239,68,68,.2) !important;
 }
-.slot-past {
-  background: rgba(255,255,255,.02) !important;
-  border-color: rgba(255,255,255,.05) !important;
-  color: rgba(255,255,255,.2) !important;
-  cursor: not-allowed;
-  opacity: 0.5;
+/* ── Premium Booking UI ────────────────────────────── */
+.book-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
 }
-.slot-past:hover {
-  background: rgba(255,255,255,.02) !important;
-  border-color: rgba(255,255,255,.05) !important;
+
+@media (max-width: 1000px) {
+  .book-layout-grid { grid-template-columns: 1fr; }
+  .sticky-sidebar { position: fixed !important; bottom: 0; left: 0; right: 0; z-index: 1000; border-radius: 24px 24px 0 0 !important; border-top: 1px solid rgba(255,255,255,0.1) !important; box-shadow: 0 -10px 40px rgba(0,0,0,0.6) !important; }
+}
+
+.premium-tab-bar {
+  display: flex; gap: 6px; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);
+}
+.premium-tab {
+  flex: 1; padding: 10px; border-radius: 10px; border: none; background: transparent; color: #9ca3af; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.premium-tab:hover { color: #fff; background: rgba(255,255,255,0.04); }
+.premium-tab.active { background: #fff; color: #000; box-shadow: 0 4px 12px rgba(255,255,255,0.2); }
+
+.slot-btn-premium {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 14px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03); color: #fff; cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
+}
+.slot-btn-premium:hover:not(.disabled) {
+  background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); transform: translateY(-2px);
+}
+.slot-btn-premium.active {
+  background: var(--accent); color: #000; border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(0, 180, 216, 0.4);
+}
+.slot-btn-premium.disabled { opacity: 0.2; cursor: not-allowed; filter: grayscale(1); }
+
+.date-chip-premium {
+  display: flex; flex-direction: column; align-items: center; min-width: 68px; padding: 14px 10px;
+  border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03); color: #9ca3af; cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.date-chip-premium:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
+.date-chip-premium.active {
+  background: #fff; color: #000; border-color: #fff; font-weight: 700;
+  box-shadow: 0 4px 15px rgba(255,255,255,0.25);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+.premium-glass {
+  background: rgba(17, 17, 17, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
 }
 
 .time-slot-grid {
