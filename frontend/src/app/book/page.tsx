@@ -18,6 +18,9 @@ const SC: Record<string, { icon: string; bg: string; color: string }> = {
   Default:    { icon: "🏟️", bg: "rgba(168,85,247,0.1)",  color: "#a855f7" },
 };
 
+// Decathlon Blue
+const DKT_BLUE = "#007bc4";
+
 type Status = "IDLE" | "BOOKING" | "PAYMENT" | "SUCCESS" | "FAILED";
 
 const MORNING_HOURS   = [5, 6, 7, 8, 9, 10, 11];
@@ -199,9 +202,9 @@ function BookPage() {
              </div>
           </div>
 
-          {(status === "IDLE" || status === "BOOKING") && (
+          {(status === "IDLE" || status === "BOOKING" || status === "PAYMENT") && (
             <>
-              <div className="premium-glass" style={{ padding: 28, marginBottom: 20, borderRadius: 24 }}>
+              <div className="premium-glass" style={{ padding: 28, marginBottom: 20, borderRadius: 24, opacity: status === "PAYMENT" ? 0.6 : 1, pointerEvents: status === "PAYMENT" ? "none" : "auto" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                   <h2 style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>1. Pick a Date</h2>
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>Availability for 4 weeks</span>
@@ -215,6 +218,7 @@ function BookPage() {
                         key={iso}
                         onClick={() => setSelectedDate(iso)}
                         className={`date-chip-premium ${isSelected ? "active" : ""}`}
+                        style={{ background: isSelected ? (status === "PAYMENT" ? DKT_BLUE : "") : "", color: isSelected ? (status === "PAYMENT" ? "#fff" : "") : "" }}
                       >
                         <span style={{ fontSize: 10, textTransform: "uppercase", marginBottom: 4 }}>{d.toLocaleDateString("en-IN", { weekday: "short" })}</span>
                         <span style={{ fontSize: 20, fontWeight: 800 }}>{d.getDate()}</span>
@@ -225,7 +229,7 @@ function BookPage() {
                 </div>
               </div>
 
-              <div className="premium-glass" style={{ padding: 28, marginBottom: 20, borderRadius: 24 }}>
+              <div className="premium-glass" style={{ padding: 28, marginBottom: 20, borderRadius: 24, opacity: status === "PAYMENT" ? 0.6 : 1, pointerEvents: status === "PAYMENT" ? "none" : "auto" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                   <h2 style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>2. Select Time</h2>
                   <div style={{ display: "flex", gap: 12 }}>
@@ -244,6 +248,7 @@ function BookPage() {
                       key={t}
                       onClick={() => setActiveTab(t)}
                       className={`premium-tab ${activeTab === t ? "active" : ""}`}
+                      style={{ background: activeTab === t ? (status === "PAYMENT" ? DKT_BLUE : "") : "", color: activeTab === t ? (status === "PAYMENT" ? "#fff" : "") : "" }}
                     >
                       {t === "morning" ? "🌅 Morning" : t === "afternoon" ? "☀️ Afternoon" : "🌙 Evening"}
                     </button>
@@ -265,7 +270,10 @@ function BookPage() {
                           disabled={isDisabled}
                           onClick={() => setSelectedHour(isSelected ? null : h)}
                           className={`slot-btn-premium ${isSelected ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
-                          style={{ borderColor: isSelected ? cfg.color : "rgba(255,255,255,0.08)" }}
+                          style={{ 
+                            borderColor: isSelected ? (status === "PAYMENT" ? DKT_BLUE : cfg.color) : "rgba(255,255,255,0.08)",
+                            background: isSelected ? (status === "PAYMENT" ? DKT_BLUE : "") : ""
+                          }}
                         >
                           <span style={{ fontSize: 15, fontWeight: 800 }}>{fmtHour(h)}</span>
                           <span style={{ fontSize: 10, opacity: 0.5, marginTop: 4 }}>
@@ -290,7 +298,7 @@ function BookPage() {
                       Get ready! You&apos;re booked for <span style={{ color: "#fff", fontWeight: 700 }}>{bookedDate}</span> at <span style={{ color: "#fff", fontWeight: 700 }}>{bookedHour !== null ? fmtHour(bookedHour) : ""}</span>.
                     </p>
                     <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
-                      <Link href="/bookings" className="btn-primary" style={{ padding: "16px 32px", borderRadius: 16 }}>Manage Bookings</Link>
+                      <Link href="/bookings" className="btn-primary" style={{ padding: "16px 32px", borderRadius: 16, background: DKT_BLUE }}>Manage Bookings</Link>
                       <Link href="/venues" className="btn-ghost" style={{ padding: "16px 32px", borderRadius: 16 }}>Explore More</Link>
                     </div>
                  </div>
@@ -360,7 +368,7 @@ function BookPage() {
                 </>
               ) : (
                 <div style={{ textAlign: "center", padding: "10px 0" }}>
-                   <div className="countdown-ring" style={{ borderColor: cfg.color, color: cfg.color, width: 100, height: 100, fontSize: 28 }}>
+                   <div className="countdown-ring" style={{ borderColor: DKT_BLUE, color: DKT_BLUE, width: 100, height: 100, fontSize: 28 }}>
                      {mm}:{ss}
                    </div>
                    <h3 className="glow-text" style={{ fontSize: 20, fontWeight: 900, color: "#fff", marginTop: 20 }}>Complete Payment</h3>
@@ -368,7 +376,7 @@ function BookPage() {
                      Your slot is held. Finalize the transaction to secure your spot!
                    </p>
                    <div style={{ display: "flex", gap: 12 }}>
-                     <button onClick={() => pay(true)} className="btn-ok" style={{ flex: 1.5, padding: 16, borderRadius: 12 }}>Pay Now</button>
+                     <button onClick={() => pay(true)} className="btn-ok" style={{ flex: 1.5, padding: 16, borderRadius: 12, background: DKT_BLUE }}>Pay Now</button>
                      <button onClick={() => pay(false)} style={{ flex: 1, padding: 16, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "var(--muted)", borderRadius: 12, cursor: "pointer", fontSize: 14, fontWeight: 600 }}>Cancel</button>
                    </div>
                 </div>
